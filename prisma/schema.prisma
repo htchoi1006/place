@@ -1,0 +1,111 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Todo {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  isCompleted Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model User {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  email         String    @unique
+  emailVerified DateTime?
+  password      String?
+  image         String?
+  roles         Role[]
+  isActive      Boolean   @default(true)
+  terms         Boolean   @default(true)
+  googleLogin   Boolean   @default(false)
+  provider      String?
+  refreshToken  String[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  knowHows KnowHow[]
+  votes    Vote[]
+}
+
+model KnowHowType {
+  id   String @id @default(auto()) @map("_id") @db.ObjectId
+  name String
+
+  knowHows KnowHow[]
+}
+
+model Category {
+  id   String @id @default(auto()) @map("_id") @db.ObjectId
+  name String @unique
+
+  knowHows KnowHow[]
+}
+
+model KnowHow {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  title         String
+  description   String
+  thumNailImage String?
+
+  viewCount       Int @default(0)
+  thumbsUpCount   Int @default(0)
+  thumbsDownCount Int @default(0)
+
+  author   User?   @relation(fields: [authorId], references: [id])
+  authorId String? @db.ObjectId
+
+  category   Category @relation(fields: [categoryId], references: [id])
+  categoryId String   @db.ObjectId
+
+  KnowHowType   KnowHowType? @relation(fields: [knowHowTypeId], references: [id])
+  knowHowTypeId String?      @db.ObjectId
+
+  tagIds String[] @db.ObjectId
+  tags   Tag[]    @relation(fields: [tagIds], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  votes Vote[]
+}
+
+enum ThumbsSatus {
+  ThumbsUp
+  ThumbsDown
+  None
+}
+
+model Vote {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  thumbsStatus ThumbsSatus
+
+  knowHow   KnowHow @relation(fields: [knowHowId], references: [id], onDelete: Cascade)
+  knowHowId String  @db.ObjectId
+
+  voter   User   @relation(fields: [voterId], references: [id])
+  voterId String @db.ObjectId
+}
+
+model Tag {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  name String @unique
+
+  knowHowIds String[]  @db.ObjectId
+  knowHows   KnowHow[] @relation(fields: [knowHowIds], references: [id])
+}
+
+enum Role {
+  USER
+  ADMIN
+}
