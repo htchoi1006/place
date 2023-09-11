@@ -115,6 +115,7 @@ export async function createTestTag() {
 const getLastWord = (searchText: string) => {
     return searchText.trim().split(" ").pop();
 }
+
 const getFilters = (searchText: string) => {
     const words = searchText.split(" ");
     // console.log('words:', words)

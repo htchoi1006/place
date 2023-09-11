@@ -128,6 +128,13 @@ const Registeration = ({ categories, knowHowTypes, tags }: RegProps) => {
     const onBadgeClick = (tag: Tag) => {
         setTagSelected(tag);
     }
+    const onTabKeyDown = ((e: React.KeyboardEvent<HTMLInputElement>) =>{
+        if(e.key ==='Tab' && tags.length > 0){
+            const firstTag = tags[0]
+            setTagSelected(firstTag)
+        }
+    });
+
     return (<>
         <Form noValidate validated={validated} onSubmit={handleSubmit}>
             <div className='d-flex mt-3 gap-2'>
@@ -229,7 +236,7 @@ const Registeration = ({ categories, knowHowTypes, tags }: RegProps) => {
                                 태그  <b className={styles.redColor}>*</b>
                             </Form.Label>
                             <Col>
-                                <Form.Control size="lg" required type="text" placeholder="태그를 입력하세요" name='tags' value={tagText} onKeyUp={onTagKeyUp} onChange={e => setTagText(e.target.value)} />
+                                <Form.Control size="lg" required type="text" placeholder="태그를 입력하세요" name='tags' value={tagText} onKeyDown={onTabKeyDown} onKeyUp={onTagKeyUp} onChange={e => setTagText(e.target.value)} />
                                 <Form.Control.Feedback type="invalid">
                                     관련 태그를 입력하세요
                                 </Form.Control.Feedback>
@@ -243,7 +250,7 @@ const Registeration = ({ categories, knowHowTypes, tags }: RegProps) => {
                             <Col className='ms-1'>
                                 {tags?.length > 0 ? <div className='bt-1 d-flex gap-1'>{
                                     tags?.map((t) => (
-                                        <div className='mt-1 cursorHand' key={t.id}> <h6>
+                                        <div className={`mt-1 ${styles.cursorHand}`} key={t.id}> <h6>
                                             <Badge onClick={e => onBadgeClick(t)} bg="info">{t.name}</Badge>
                                         </h6></div>
                                     ))

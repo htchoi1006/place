@@ -15,3 +15,7 @@
     background-image: url('../../public/images/thumbNailImage.png');
 }
 
+.cursorHand{
+    cursor: pointer;
+}
+
