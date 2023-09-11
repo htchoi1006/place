@@ -36,8 +36,8 @@ export const writeFile = async (data: FormData) => {
 
         // return contents;
     } catch (err) {
-        console.log(err);
-        return 'Something went wrong';
+        console.log('writeFile', err);
+        // return 'Something went wrong';
     }
 }
 

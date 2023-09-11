@@ -16,7 +16,7 @@ export default function GoogleLogin({ searchParams }: { searchParams: any }) {
   try {
     const  accessToken  = searchParams.accessToken
     if (accessToken) {
-      console.log('accessToken:', accessToken)
+      // console.log('accessToken:', accessToken)
       // dispatch(setCredentials({ accessToken }))
       router.push('/')
     }

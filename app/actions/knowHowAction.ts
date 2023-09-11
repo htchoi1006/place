@@ -8,4 +8,9 @@ export async function createKnowHowAction(data: FormData) {
   await createKnowHow(data);
   revalidatePath('/')
 }
+export async function updateKnowHowAction(data: KnowHow) {
+  console.log('update KnowHow Action',JSON.stringify(data, null, 2));
+  await updateKnowHow(data);
+  revalidatePath('/')
+}
 

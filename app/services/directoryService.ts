@@ -8,7 +8,7 @@ export const getImgDirectory = () =>{
 
 export const getImageFilePath = (fileName:string) =>{
     const fp = path.join(getImgDirectory(), fileName);
-    console.log('file path to save:', fp)
+    // console.log('file path to save:', fp)
 
     return fp;
 

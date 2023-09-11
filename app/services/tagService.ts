@@ -25,10 +25,10 @@ export async function getTagsByName(tagsInput: string) {
             })
             if(tag !==null){
                 tags.push(tag)
-                console.log("tag in getTagIds: ", tag)
+                // console.log("tag in getTagIds: ", tag)
             }
         })
-        console.log("tags in getTagsByName: ", tags)
+        // console.log("tags in getTagsByName: ", tags)
        return tags;
     } catch (error) {
         return ({ error })
@@ -49,10 +49,10 @@ export async function createTags(input: string | undefined): Promise<Tag[] | und
             const tag = await createTag(name.toLowerCase());
             if (tag) {
                 tags.push(tag)
-                console.log('tags on map:', JSON.stringify(tags))
+                // console.log('tags on map:', JSON.stringify(tags))
             }
         })
-        console.log('tagIds on createTags:', JSON.stringify(tags))
+        // console.log('tagIds on createTags:', JSON.stringify(tags))
         return tags;
     }
 }
@@ -86,10 +86,10 @@ export async function createTagIds(input: string | undefined): Promise<string[] 
                 const tag = await createTag(name.toLowerCase());
                 if (tag) {
                     tagIds.push(tag.id)
-                    console.log('tagIds on map:', JSON.stringify(tagIds))
+                    // console.log('tagIds on map:', JSON.stringify(tagIds))
                 }
             })
-            console.log('tagIds on createTags:', JSON.stringify(tagIds))
+            // console.log('tagIds on createTags:', JSON.stringify(tagIds))
             return tagIds;
         }
     } catch (error) {
@@ -124,7 +124,7 @@ const getFilters = (searchText: string) => {
 export async function createTag(input: string) {
     try {
         let tagName = getLastWord(input)?.toLocaleLowerCase()
-        console.log('input create tag:', JSON.stringify(tagName,null,2))
+        // console.log('input create tag:', JSON.stringify(tagName,null,2))
         if (!tagName || tagName.length < 2)
             return;
         const tag = await prisma.tag.findUnique({
@@ -133,16 +133,16 @@ export async function createTag(input: string) {
             }
         })
         if (tag) {
-            console.log('tag found:', JSON.stringify(tag, null, 2))
+            // console.log('tag found:', JSON.stringify(tag, null, 2))
             return tag;
         } else {
-            console.log('tag not found:', tagName)
+            // console.log('tag not found:', tagName)
             const newTag = await prisma.tag.create({
                 data: {
                     name: tagName
                 },
             })
-            console.log('newTag:', JSON.stringify(newTag, null, 2))
+            // console.log('newTag:', JSON.stringify(newTag, null, 2))
             return newTag;
         }
     } catch (error) {

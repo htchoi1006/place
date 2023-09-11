@@ -79,6 +79,7 @@ export async function updateKnowHow(knowHow: KnowHow) {
                 data: {
                     thumbsUpCount: knowHow.thumbsUpCount,
                     thumbsDownCount: knowHow.thumbsDownCount,
+                    viewCount: knowHow.viewCount,
                 },
                 include:{
                     votes:true,
@@ -109,7 +110,29 @@ export async function getKnowHows() {
         return knowHows
     }
     catch (error) {
-        return error
+        console.log(error)
+        // return error
+    }
+
+}
+export async function getKnowHow(id:string) {
+    try {
+        const knowHow = await prisma.knowHow.findUnique({
+            where:{
+                id:id,
+            },
+            include: {
+                // tags: true,
+                // author: true,
+                votes: true,
+            }
+        })
+        // console.log('get products: ', products)
+        return knowHow
+    }
+    catch (error) {
+        console.log(error)
+        // return error
     }
 
 }

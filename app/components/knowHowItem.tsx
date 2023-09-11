@@ -1,109 +1,146 @@
-'use client'
-import { KnowHow, User, Vote, ThumbsSatus } from "@prisma/client";
+'use client';
+import { User, Vote, ThumbsSatus } from "@prisma/client";
 import Card from "react-bootstrap/Card";
-import { useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation';
 import EyeFill from "./icons/eyeFill";
 import Thumbup from "./icons/thumbUp";
-import ThumbUpFill from "./icons/thumbUpFill";
 import ThumbDown from "./icons/thumbDown";
-import ThumbDownFill from "./icons/thumbDownFill";
 import { getDaysFromToday } from "@/lib/dateTimeLib";
-import { useCallback, useEffect, useState } from "react";
-import { useSession } from "next-auth/react"
-import style from '@/app/page.module.css'
+import { useCallback, useEffect, useLayoutEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+import style from '@/app/page.module.css';
+import Fork from "./icons/fork";
+import { any } from "zod";
+import { fork } from "child_process";
 import { createVoteActionAndUpdateKnowHow } from "../actions/voteAction";
 
 type KnowHowProps = {
     knowHow: any,
     logInUser?: User,
-}
+};
+
+export type VoteData = Omit<Vote, "id">;
 
 const KnowHowItem = (props: KnowHowProps) => {
-
-    const { knowHow, logInUser } = props
-    const { data: session } = useSession()
+    const { knowHow, logInUser } = props;
+    const { data: session } = useSession();
     const router = useRouter();
-    const [thumbsUp, setThumbsUp] = useState(false)
-    const [thumbsDown, setThumbsDown] = useState(false)
-    const [voteFormData] = useState<FormData>(new FormData())
-    const [vt, setVote] = useState<Vote>();
+    const [thumbsStatus, setThumbsStatus] = useState<ThumbsSatus>(ThumbsSatus.None);
+    const [forked, setforked] = useState(false);
+    const [voter, setVoter] = useState<User>(session?.user);
+    const [voteLoaded, setVoteLoaded] = useState<Vote>();
+    const [voteChanged, setVoteChanged] = useState(false);
 
     const getVote = useCallback(() => {
-        const v = knowHow.votes.filter((s: { voterId: any; }) => s.voterId === session?.user.id)[0];
-        setVote(v);
-    }, [knowHow, session?.user.id]);
+        // console.log('getVote voter: ', voter);
+        if (voter !== undefined) {
+            // console.log('voter:', voter);
+            const data = knowHow.votes.filter((s: { voterId: any; }) => s.voterId === voter.id)[0] as Vote;
+            if (data) {
+                // console.log('data:', data);
+                setVoteLoaded(data);
+                // setVoteToSave(data);
+                setThumbsStatus(data.thumbsStatus);
+                setforked(data.forked);
+                setVoteChanged(false);
+            }
+        }
+    }, [knowHow.votes, voter]);
 
-    useEffect(() => {
+    useLayoutEffect(() => {
+        // console.log('session: ', session);
+        setVoter(session?.user);
+        // console.log('getVote');
         getVote();
-    }, [getVote, session])
+    }, [getVote, session]);
 
     useEffect(() => {
-        // alert('currentVote: ' + JSON.stringify(vt, null, 2))
-        if (logInUser) {
-            voteFormData.set("voterId", logInUser.id);
-        }
-        if (vt?.thumbsStatus === ThumbsSatus.ThumbsUp) {
-            setThumbsUp(true);
-        }
-        if (vt?.thumbsStatus === ThumbsSatus.ThumbsDown) {
-            setThumbsDown(true);
-        }
-        if (thumbsUp && !thumbsDown) {
-            voteFormData.set("thumbsStatus", ThumbsSatus.ThumbsUp)
-        }
-        else if (thumbsDown && !thumbsUp) {
-            voteFormData.set("thumbsStatus", ThumbsSatus.ThumbsDown)
-        }
-        else {
-            voteFormData.set("thumbsStatus", ThumbsSatus.None)
-        }
+        console.log('use effect: ', thumbsStatus, forked);
+        console.log('initial vote: ', voteLoaded);
+    }, [thumbsStatus, forked, voteLoaded]);
 
-        createVoteActionAndUpdateKnowHow(knowHow, session?.user, voteFormData)
-
-    }, [knowHow, logInUser, session?.user, thumbsDown, thumbsUp, voteFormData, vt, vt?.thumbsStatus])
-
-    const handleClickOnCard = (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
-        router.push(`/${props.knowHow?.id}`)
-    }
+    const handleClickOnCard = (e: any) => {
+        router.push(`/${props.knowHow?.id}`);
+    };
 
     const checkLoginStatus = () => {
         if (!session) {
-            alert('로그인을 하셔야 선택할 수 있습니다.')
+            alert('로그인을 하셔야 선택할 수 있습니다.');
             return false;
         }
-        return true
-    }
+        return true;
+    };
 
-    const handleThumbUp = (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
-        if (checkLoginStatus()) {
-            if (thumbsDown) {
-                knowHow.thumbsDownCount--;
+    useLayoutEffect(() => {
+        // console.log('vote Loaded: ', voteLoaded, thumbsStatus);
+        // console.log('thumbsStatus: ', thumbsStatus);
+        if (voteLoaded) {
+            if (voteLoaded.forked !== forked || voteLoaded.thumbsStatus !== thumbsStatus) {
+                // console.log('useLayoutEffect set voteChanged: ', thumbsStatus);
+                setVoteChanged(true);
             }
-            setThumbsUp(true)
-            setThumbsDown(false)
-            knowHow.thumbsUpCount++;
         }
-    }
-    const handleThumbUpFill = (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
-        setThumbsUp(false)
-        setThumbsDown(false)
-        knowHow.thumbsUpCount--;
-    }
-    const handleThumbDown = (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
+        // console.log('anyChange: ', voteChanged);
+    }, [thumbsStatus, forked, voteLoaded, voteChanged]);
+
+    useEffect(() => {
+        // console.log('use Effect, voteChanged', voteChanged);
+        if (voteChanged && voter !== null) {
+            // console.log('do something here!!', thumbsStatus, forked, voter.id, knowHow.id);
+            const voteToVote: VoteData = {
+                thumbsStatus: thumbsStatus,
+                forked: forked,
+                knowHowId: knowHow.id,
+                voterId: voter.id,
+            };
+            createVoteActionAndUpdateKnowHow(knowHow, voter, voteToVote);
+        }
+    }, [forked, knowHow, knowHow.id, thumbsStatus, voteChanged, voter]);
+
+    const handleThumbUp = (e: any) => {
         if (checkLoginStatus()) {
-            if (thumbsUp) {
+            if (thumbsStatus === ThumbsSatus.None) {
+                setThumbsStatus(ThumbsSatus.ThumbsUp);
+                knowHow.thumbsUpCount++;
+            } else if (thumbsStatus === ThumbsSatus.ThumbsDown) {
+                setThumbsStatus(ThumbsSatus.ThumbsUp);
+                knowHow.thumbsUpCount++;
+                knowHow.thumbsDownCount--;
+            } else if (thumbsStatus === ThumbsSatus.ThumbsUp) {
+                setThumbsStatus(ThumbsSatus.None);
                 knowHow.thumbsUpCount--;
             }
-            setThumbsDown(true)
-            setThumbsUp(false)
-            knowHow.thumbsDownCount++;
         }
-    }
-    const handleThumbDownFill = (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
-        setThumbsDown(!thumbsDown)
-        setThumbsUp(false)
-        knowHow.thumbsDownCount--;
-    }
+    };
+
+    const handleThumbDown = (e: any) => {
+        if (checkLoginStatus()) {
+            if (thumbsStatus === ThumbsSatus.None) {
+                setThumbsStatus(ThumbsSatus.ThumbsDown);
+                knowHow.thumbsDownCount++;
+
+            } else if (thumbsStatus === ThumbsSatus.ThumbsDown) {
+                setThumbsStatus(ThumbsSatus.None);
+                knowHow.thumbsDownCount--;
+
+            } else if (thumbsStatus === ThumbsSatus.ThumbsUp) {
+                setThumbsStatus(ThumbsSatus.ThumbsDown);
+                knowHow.thumbsDownCount++;
+                knowHow.thumbsUpCount--;
+            }
+        }
+    };
+
+    const handleforked = (e: any) => {
+        if (checkLoginStatus()) {
+            if (forked === true) {
+                setforked(false);
+            }
+            else {
+                setforked(true);
+            }
+        }
+    };
 
     return (
         <>
@@ -121,16 +158,19 @@ const KnowHowItem = (props: KnowHowProps) => {
                             <EyeFill className='ms-3 me-2' />
                             <span>{props.knowHow?.viewCount}</span>
                             <span className="ms-3">
-                                {thumbsUp ? <ThumbUpFill className={`ms-1 ${style.cursorHand}`} onClick={handleThumbUpFill} /> : <Thumbup className={`ms-1 ${style.cursorHand}`} onClick={handleThumbUp} />}
+                                <Thumbup className={`ms-1 ${style.cursorHand}`} onClick={handleThumbUp} fill={thumbsStatus === ThumbsSatus.ThumbsUp ? "red" : ''} title="좋아요" />
                                 <span className="ms-2 me-3">{knowHow.thumbsUpCount}</span>
-                                {thumbsDown ? <ThumbDownFill className={`ms-1 ${style.cursorHand}`} onClick={handleThumbDownFill} /> : <ThumbDown className={`ms-1 ${style.cursorHand}`} onClick={handleThumbDown} />}
+                                <ThumbDown className={`ms-1 ${style.cursorHand}`} onClick={handleThumbDown} fill={thumbsStatus === ThumbsSatus.ThumbsDown ? "red" : ''} title="싫어요" />
                                 <span className="ms-2 me-3">{knowHow.thumbsDownCount}</span>
+                                <span className="mt-3">
+                                    <Fork className={`ms-1 mt-1 ${style.cursorHand}`} onClick={handleforked} fill={forked ? "red" : ''} title="찜했어요" />
+                                </span>
                             </span>
                         </small>
                     </Card.Footer>
                 </Card>
             </div>
         </>
-    )
-}
-export default KnowHowItem
+    );
+};
+export default KnowHowItem;

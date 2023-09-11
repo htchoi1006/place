@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
 
   const fp = getImageFilePath(file.name);
   await writeFile(fp, buffer)
-  console.log(`open ${fp} to see the uploaded file`)
+  // console.log(`open ${fp} to see the uploaded file`)
 
   return NextResponse.json({ success: true })
 }

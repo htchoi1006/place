@@ -88,6 +88,7 @@ model Vote {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
   thumbsStatus ThumbsSatus
+  forked Boolean @default(false)
 
   knowHow   KnowHow @relation(fields: [knowHowId], references: [id], onDelete: Cascade)
   knowHowId String  @db.ObjectId

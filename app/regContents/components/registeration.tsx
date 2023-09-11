@@ -30,7 +30,7 @@ const Registeration = ({ categories, knowHowTypes, tags }: RegProps) => {
         if (selectedTag !== null) {
             var lastIndex = tagText.lastIndexOf(" ")
             let tx = tagText.substring(0, lastIndex)
-            console.log(lastIndex);
+            // console.log(lastIndex);
             if (lastIndex === -1) {
                 tx = tx + selectedTag.name;
             } else {
