@@ -9,9 +9,7 @@ import { getVote } from './services/voteService'
 
 
 const PlaceHomePage = async () => {
-  const knowHows = (await getKnowHows() as Array<KnowHow>).slice(0,1);;
-
-  // console.log('howhows: ', JSON.stringify(knowHows,null,2))
+  const knowHows = (await getKnowHows() as Array<KnowHow>);
   // const knowHows = (await getKnowHows() as Array<KnowHow>).slice(0,1);
 
   return (
