@@ -40,8 +40,8 @@ const Header = () => {
   return (
     <Navbar bg="dark" variant='dark' expand="lg" collapseOnSelect>
       <Container>
-        <Navbar.Brand href="/">
-          {'Place '}
+        <Navbar.Brand href="https://amisvc.com">
+          {'서비스홈'}
         </Navbar.Brand>
 
         <Navbar.Toggle aria-controls="basic-navbar-nav" />

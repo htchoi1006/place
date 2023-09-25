@@ -33,6 +33,6 @@ const Page = async ({ params }: { params: { id: string } }) => {
 
 export default Page
 
-function updataKnowHowAction(knowHow: ({ votes: { id: string; thumbsStatus: import("@prisma/client").$Enums.ThumbsSatus; forked: boolean; knowHowId: string; voterId: string; }[]; } & { id: string; title: string; description: string; thumNailImage: string | null; viewCount: number; thumbsUpCount: number; thumbsDownCount: number; authorId: string | null; categoryId: string; knowHowTypeId: string | null; tagIds: string[]; createdAt: Date; updatedAt: Date; }) | null | undefined) {
+function updataKnowHowAction(knowHow: ({ votes: { id: string; thumbsStatus: import("@prisma/client").$Enums.ThumbsSatus; forked: boolean; knowHowId: string; voterId: string; }[]; } & { id: string; title: string; description: string; thumbNailImage: string | null; viewCount: number; thumbsUpCount: number; thumbsDownCount: number; authorId: string | null; categoryId: string; knowHowTypeId: string | null; tagIds: string[]; createdAt: Date; updatedAt: Date; }) | null | undefined) {
   throw new Error('Function not implemented.');
 }

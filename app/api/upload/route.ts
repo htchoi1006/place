@@ -6,6 +6,8 @@ export async function POST(request: NextRequest) {
   const data = await request.formData()
   const file: File | null = data.get('file') as unknown as File
 
+  console.log(JSON.stringify(file,null,2))
+
   if (!file) {
     return NextResponse.json({ success: false })
   }

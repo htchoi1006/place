@@ -161,3 +161,12 @@ error can't resolve fs // fs 는 node server로 'use server'를 사용해야함
 
 //lodash
 npm install --save @types/lodash
+
+
+//cloudinary
+pnpm add cloudinary
+
+//ckeditor
+pnpm add @ckeditor/ckeditor5-build-classic @ckeditor/ckeditor5-editor-classic @ckeditor/ckeditor5-react
+
+pnpm add html-react-parser

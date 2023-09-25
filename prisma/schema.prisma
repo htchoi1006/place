@@ -52,13 +52,14 @@ model Category {
 model KnowHow {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
-  title         String
-  description   String
-  thumNailImage String?
+  title          String
+  description    String
+  thumbNailImage String?
 
-  viewCount       Int @default(0)
-  thumbsUpCount   Int @default(0)
-  thumbsDownCount Int @default(0)
+  viewCount       Int     @default(0)
+  thumbsUpCount   Int     @default(0)
+  thumbsDownCount Int     @default(0)
+  isPublic        Boolean @default(true)
 
   author   User?   @relation(fields: [authorId], references: [id])
   authorId String? @db.ObjectId
@@ -76,9 +77,11 @@ model KnowHow {
   updatedAt DateTime @updatedAt
 
   votes Vote[]
+
+  youtubeData YoutubeData?
 }
 
-enum ThumbsSatus {
+enum ThumbsStatus {
   ThumbsUp
   ThumbsDown
   None
@@ -87,14 +90,32 @@ enum ThumbsSatus {
 model Vote {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
-  thumbsStatus ThumbsSatus
-  forked Boolean @default(false)
+  thumbsStatus ThumbsStatus
+  forked       Boolean      @default(false)
 
   knowHow   KnowHow @relation(fields: [knowHowId], references: [id], onDelete: Cascade)
   knowHowId String  @db.ObjectId
 
   voter   User   @relation(fields: [voterId], references: [id])
   voterId String @db.ObjectId
+}
+
+model YoutubeData {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  videoIds      String[]
+  thumbnailType ThumbnailType
+
+  knowHow   KnowHow @relation(fields: [knowHowId], references: [id])
+  knowHowId String  @unique @db.ObjectId
+}
+
+enum ThumbnailType {
+  DEFAULT
+  MEDIUM
+  height
+  STANDARD
+  MAXRES
 }
 
 model Tag {

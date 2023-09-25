@@ -1,271 +1,138 @@
-'use client'
-import Image from 'next/image'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { Col, Form, Button, Row, Badge } from 'react-bootstrap'
-import styles from '../page.module.css'
-import { Category, KnowHowType, Tag } from '@prisma/client'
-import { createKnowHowAction } from '@/app/actions/knowHowAction'
-import FileUploader from '@/components/controls/fileUploader'
-import { DropzoneOptions } from 'react-dropzone'
-import { useSession, } from 'next-auth/react'
-import { createTagAction } from '@/app/actions/tagAction'
-import { useRouter } from 'next/navigation'
+'use client';
+import React, { useRef, useState } from 'react';
+
+import { Category, KnowHowType, Tag } from '@prisma/client';
+import { Button } from 'react-bootstrap';
+import { RegiYoutube } from './regiYoutube';
+import { RegiImages } from './regiImages';
+import { RegiGeneral } from './regiGeneral';
+import { createKnowHowWithYtAction } from '@/app/actions/knowHowAction';
+import { RegiFiles } from './regiFiles';
+import { RegImgTest } from './regImgTest';
+import { RegiText } from './regiText';
 
 type RegProps = {
     categories: Category[],
     knowHowTypes: KnowHowType[],
     tags: Tag[],
-}
+};
 
 const Registeration = ({ categories, knowHowTypes, tags }: RegProps) => {
-    const { data: session } = useSession()
-    const [validated, setValidated] = useState(false);
-    const [file, setFile] = useState<File>()
-    const [imgSrc, setImgSrc] = useState('')
-    const [tagText, setTagText] = useState('')
-    const [selectedTag, setTagSelected] = useState<Tag | null>(null)
-    const router = useRouter()
+    const [detailInfo, setDetailInfo] = useState(false);
+    const [genData, setGenData] = useState<FormData>();
+    const [ytData, setYTData] = useState<any>();
+    const [imgData, setImgData] = useState<any[]>([]);
+    const [showYtData, setShowYtData] = useState(false);
+    const regGenRef = useRef<CanHandleSubmit>(null);
+    const ytRef = useRef<CanHandleSubmit>(null);
+    const imgRef = useRef<CanHandleSubmit>(null);
+    const fileRef = useRef<CanHandleSubmit>(null);
 
-    useEffect(() => {
-        if (selectedTag !== null) {
-            var lastIndex = tagText.lastIndexOf(" ")
-            let tx = tagText.substring(0, lastIndex)
-            // console.log(lastIndex);
-            if (lastIndex === -1) {
-                tx = tx + selectedTag.name;
-            } else {
-                tx = tx + " " + selectedTag.name;
-            }
-            // setSpaceEntered(true)
-            setTagText(tx)
-            setTagSelected(null)
-        }
-    }, [selectedTag, tagText])
+    const [showYoutube, setShowYoutube] = useState(false);
+    const [showImg, setShowImg] = useState(false);
+    const [showFile, setShowFile] = useState(false);
+    const [showTextEditor, setShowTextEditor] = useState(false);
 
-    const onDrop = useCallback(async (files: File[]) => {
-        setFile(files[0])
-        try {
-            const data = new FormData()
-            data.set('file', files[0])
-
-            const res = await fetch('/api/upload', {
-                method: 'POST',
-                body: data
-            })
-            const imgUrl = `/images/${files[0].name}`;
-            setImgSrc(imgUrl);
-            if (!res.ok) throw new Error(await res.text())
-
-        } catch (error) {
-            console.log(error)
-        }
-    }, [])
-
-    const options: DropzoneOptions = {
-        accept: { 'image/*': [] }, maxSize: 1024 * 1000, maxFiles: 1, onDrop
-    }
-
-    const handleSubmit = async (e: any) => {
-
-        try {
-            if (!file) {
-                alert('썸네일 이미지를 등록하세요')
-                return
-            }
-            const form = e.currentTarget;
-            const formData = new FormData(e.currentTarget);
-            formData.set('thumNailImage', imgSrc)
-            formData.set('authorId', session?.user.id)
-
-            // const formDataObj = Object.fromEntries(formData.entries());
-            // alert(JSON.stringify(formDataObj, null, 2))
-            // alert(typeof formDataObj)
-
-            if (form.checkValidity() === false) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-            createKnowHowAction(formData)
-            setValidated(true);
-            router.push('/')
-        } catch (error) {
-            console.log(error)
-        }
-    }
-
-    const createOrRemoveDuplicate = () => {
-        const words = tagText.trim().split(" ");
-        if (words.length > 1) {
-            const last = tagText.trim().split(" ").pop() as string;
-            var lastIndex = tagText.trim().lastIndexOf(" ");
-            const tagTextBefore = tagText.trim().substring(0, lastIndex);
-            const included = tagTextBefore.includes(last);
-            if (included) {
-                // alert(`${last} is already entered!`)
-                setTagText(tagTextBefore)
-            }
-            else {
-                // alert('tag Text: '+ tagText.toString())
-                createTagAction(tagText);
-            }
-        }
+    const detailInfoBtnDesc = () => {
+        if (detailInfo) return '세부사항 숨기기';
         else {
-            // alert('tag Text: '+ tagText.toString())
-            createTagAction(tagText);
+            return '세부사항 등록하기';
         }
-    }
+    };
 
-    const onTagKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        e.preventDefault()
-        if (e.key === 'Enter' || e.key === ' ') {
-            createOrRemoveDuplicate();
-            router.push(`/regContents/?searchBy= `)
-        }
+    const detailYTInfoBtnDesc = () => {
+        if (detailInfo) return '유튜브 숨기기';
         else {
-            router.push(`/regContents/?searchBy=${tagText}`)
+            return '유튜브 등록하기';
         }
-    }
-    const onBadgeClick = (tag: Tag) => {
-        setTagSelected(tag);
-    }
-    const onTabKeyDown = ((e: React.KeyboardEvent<HTMLInputElement>) =>{
-        if(e.key ==='Tab' && tags.length > 0){
-            const firstTag = tags[0]
-            setTagSelected(firstTag)
+    };
+
+
+    const handleDetailInfoBtnClicke = () => {
+        // alert('handleDetailInfoBtnClicke');
+        // regGenRef.current?.handleSubmit();
+        setDetailInfo(!detailInfo);
+        setShowYtData(!showYtData);
+        regGenRef.current?.handleSubmit();
+        // if (!genData) {
+        //     alert('제목등 상기 필수사항을 입력하세요');
+        // }
+        // setHideGenInfo(true);
+        // console.log(hideGenInfo);
+        // if (genData) {
+        //     setDetailInfo(!detailInfo);
+        // }
+
+    };
+    const setRegDataToSave = (name: string, data: any) => {
+        // alert('set Gen Data ToSave ' + name + JSON.stringify(data));
+        if (name === "regiGen") {
+            setGenData(data);
         }
-    });
+        else if (name === "ytData") {
+            setYTData(data);
+        }
+        else if (name === "images") {
+            setImgData(data);
+        }
+        // else if (name === "ytData") {
+        //     setYTData(data);
+        // }
+
+        console.log('gen data:', genData);
+        console.log('yt data:', ytData);
+        console.log('gen image:', imgData);
+    };
+    const handleSaveBtnClick = () => {
+        alert('handleSaveBtnClick');
+        regGenRef.current?.handleSubmit();
+        ytRef.current?.handleSubmit();
+        imgRef.current?.handleSubmit();
+
+        alert('ytData' + JSON.stringify(ytData));
+        if (genData && ytData) {
+            createKnowHowWithYtAction(genData, ytData);
+        }
+    };
+    const handleCancelBtnClick = () => {
+
+    };
 
     return (<>
-        <Form noValidate validated={validated} onSubmit={handleSubmit}>
-            <div className='d-flex mt-3 gap-2'>
-                <div className="card shadow p-3 mb-5 col-4" tabIndex={0}>
-                    {file ? (
-                        <div className='col-5 p-3'>
-                            <Image
-                                alt={file.name}
-                                src={imgSrc}
-                                quality={100}
-                                fill
-                                sizes="100vw"
-                                style={{
-                                    objectFit: 'contain',
-                                }}
-                            />
-                        </div>
-                    ) : (<div>
-                        <h3 className='text-center mt-3 mb-2'>  썸네일 이미지 등록 <b className={styles.redColor}>*</b></h3>
-                        <div className={styles.upload}>
-                            <FileUploader loaderMessage='썸네일 이미지를 끌어오거나 선택하세요 ' options={options} />
-                        </div>
-                    </div>)}
 
-                </div>
-                <div className="card shadow p-3 mb-5 col-7">
-                    <Form.Group controlId="title" className='mb-3'>
-                        <Row>
-                            <Form.Label column="lg" lg={3}>
-                                제목 <b className={styles.redColor}>*</b>
-                            </Form.Label>
-                            <Col>
-                                <Form.Control size="lg" type="text" required placeholder="제목을 입력하세요" name='title' />
-                                <Form.Control.Feedback type="invalid">
-                                    제목을 입력하세요
-                                </Form.Control.Feedback>
-                            </Col>
+        <RegiGeneral ref={regGenRef} categories={categories} knowHowTypes={knowHowTypes} tags={tags} setRegDataToSave={setRegDataToSave} />
 
-                        </Row>
-                    </Form.Group>
-                    <Form.Group controlId="knowhowtype" className='mb-3'>
-                        <Row>
-                            <Form.Label column="lg" lg={3}>
-                                경험유형  <b className={styles.redColor}>*</b>
-                            </Form.Label>
-                            <Col>
-                                <Form.Select required aria-label="know how type select" name='knowHowTypeId' >
-                                    <option value="">경험유형(필수)</option>
-                                    {knowHowTypes.map(knowHowType => (
-                                        <option key={knowHowType.id} value={knowHowType.id}>{knowHowType.name}</option>
-                                    ))}
-                                </Form.Select>
-                                <Form.Control.Feedback type="invalid">
-                                    경험유형을 선택하세요
-                                </Form.Control.Feedback>
-                            </Col>
+        <div className='mt-3'>
+            <button type="button" className="btn btn-success me-3" onClick={handleDetailInfoBtnClicke}>{detailInfoBtnDesc()}</button>
+            <Button className='me-3' onClick={handleSaveBtnClick} type="submit">저장</Button>
+            <Button className='btn btn-secondary' onClick={handleCancelBtnClick} type="submit">취소</Button>
+        </div>
 
-                        </Row>
-                    </Form.Group>
-                    <Form.Group controlId="categorytype" className='mb-3'>
-                        <Row>
-                            <Form.Label column="lg" lg={3}>
-                                카테고리  <b className={styles.redColor}>*</b>
-                            </Form.Label>
-                            <Col>
-                                <Form.Select required as='select' name='categoryId' >
-                                    <option value="">카테고리(필수)</option>
-                                    {categories.map(category => (
-                                        <option key={category.id} value={category.id}>{category.name}</option>
-                                    ))}
-                                </Form.Select>
-                                <Form.Control.Feedback type="invalid">
-                                    카테고리를 선택하세요
-                                </Form.Control.Feedback>
-                            </Col>
+        {/* <button type="button" className="btn mt-3 btn-success" onClick={handleDetailInfoBtnClicke}>{detailInfoBtnDesc()}</button> */}
 
-                        </Row>
-                    </Form.Group>
-                    <Form.Group controlId="description" className='mb-3'>
-                        <Row>
-                            <Form.Label column="lg" lg={3}>
-                                설명
-                            </Form.Label>
-                            <Col>
-                                <Form.Control required name='description'
-                                    as="textarea"
-                                    placeholder="자세한 설명을 입력하세요"
-                                    style={{ height: '100px' }}
-                                />
-                                <Form.Control.Feedback type="invalid" >
-                                    자세한 설명을 입력하세요
-                                </Form.Control.Feedback>
-                            </Col>
-                        </Row>
-                    </Form.Group>
-                    <Form.Group controlId="tags" className='mb-3'>
-                        <Row>
-                            <Form.Label column="lg" lg={3}>
-                                태그  <b className={styles.redColor}>*</b>
-                            </Form.Label>
-                            <Col>
-                                <Form.Control size="lg" required type="text" placeholder="태그를 입력하세요" name='tags' value={tagText} onKeyDown={onTabKeyDown} onKeyUp={onTagKeyUp} onChange={e => setTagText(e.target.value)} />
-                                <Form.Control.Feedback type="invalid">
-                                    관련 태그를 입력하세요
-                                </Form.Control.Feedback>
-                            </Col>
+        {showYtData && (<>
+            <div className='mt-2'>
+                <p onClick={() => { setShowYoutube(!showYoutube); setShowImg(false); setShowFile(false); }}>유튜브 등록하기</p>
+                <RegiYoutube ref={ytRef} setRegDataToSave={setRegDataToSave} showYtInput={showYoutube} />
 
-                        </Row>
-                        <Row>
-                            <Form.Label column="lg" lg={3}>
-
-                            </Form.Label>
-                            <Col className='ms-1'>
-                                {tags?.length > 0 ? <div className='bt-1 d-flex gap-1'>{
-                                    tags?.map((t) => (
-                                        <div className={`mt-1 ${styles.cursorHand}`} key={t.id}> <h6>
-                                            <Badge onClick={e => onBadgeClick(t)} bg="info">{t.name}</Badge>
-                                        </h6></div>
-                                    ))
-                                }</div> : <></>}
-                            </Col>
-
-                        </Row>
-
-                    </Form.Group>
-                </div>
             </div>
-            <Button type="submit">저장</Button>
-        </Form>
-    </>
-    )
-}
+            <div className='mt-2'>
+                <p onClick={() => { setShowImg(!showImg); setShowYoutube(false); setShowFile(false); }}>이미지 등록하기</p>
+                <RegiImages ref={imgRef} setRegDataToSave={setRegDataToSave} showImg={showImg} />
+            </div>
+            <div className='mt-2'>
+                <p onClick={() => { setShowFile(!showFile); setShowImg(false); setShowYoutube(false); }}>파일 등록하기</p>
+                <RegiFiles ref={fileRef} setRegDataToSave={setRegDataToSave} showFileInput={showFile} />
+            </div>
+            <div className='mt-2'>
+                <p onClick={() => { setShowTextEditor(!showTextEditor); setShowFile(false); setShowImg(false); setShowYoutube(false); }}>텍스트 등록하기</p>
+                <RegiText ref={fileRef} setRegDataToSave={setRegDataToSave} showTextEditor={showTextEditor} />
+            </div>
+        </>
+        )}
 
-export default Registeration
+    </>
+    );
+};
+
+export default Registeration;

@@ -1,6 +1,6 @@
 'use server'
 import prisma from '@/prisma/prisma'
-import { KnowHow, ThumbsSatus, User, Vote } from '@prisma/client'
+import { KnowHow, ThumbsStatus, User, Vote } from '@prisma/client'
 import exp from 'constants';
 import { disconnect } from 'process';
 import { VoteData } from '../components/knowHowItem';
@@ -29,7 +29,7 @@ export async function createtVoteAndUpdateKnowHow(knowHow: KnowHow, voter: User,
     if (vote !== null) {
         //update vote
         if (vote.thumbsStatus !== voteInput.thumbsStatus || vote.forked !== voteInput.forked) {
-            if (voteInput.thumbsStatus === ThumbsSatus.None && voteInput.forked === false) {
+            if (voteInput.thumbsStatus === ThumbsStatus.None && voteInput.forked === false) {
                 const result = await prisma.vote.delete({
                     where: {
                         id: vote.id,
@@ -53,7 +53,7 @@ export async function createtVoteAndUpdateKnowHow(knowHow: KnowHow, voter: User,
     }
     else if (vote === null) {
         //create vote
-        if (voteInput.thumbsStatus !== ThumbsSatus.None || voteInput.forked === true) {
+        if (voteInput.thumbsStatus !== ThumbsStatus.None || voteInput.forked === true) {
             vote = await prisma.vote.create({
                 data: {
                     thumbsStatus: voteInput.thumbsStatus,
