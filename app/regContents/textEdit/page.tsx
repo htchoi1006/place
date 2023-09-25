@@ -10,7 +10,7 @@ export default function TextEditpage() {
   const [data, setData] = useState<string>("");
   return (
     <main className='container'>
-      <h2>Using CKEditor&nbsp;5 build in NextJs</h2>
+      <h2>세부내역을 입력하세요</h2>
       <div className='{styles.textEdit}'>
         <CKEditor 
         

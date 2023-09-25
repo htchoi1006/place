@@ -5,7 +5,7 @@ import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import parse from "html-react-parser";
 import { useState } from 'react';
 
-export default function TextEditpage() {
+export default function TestPage() {
   const [data, setData] = useState<string>("");
   return (
     <main className='container'>
