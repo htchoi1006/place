@@ -168,5 +168,15 @@ pnpm add cloudinary
 
 //ckeditor
 pnpm add @ckeditor/ckeditor5-build-classic @ckeditor/ckeditor5-editor-classic @ckeditor/ckeditor5-react
+pnpm  add @ckeditor/ckeditor5-basic-styles @ckeditor/ckeditor5-essentials @ckeditor/ckeditor5-paragraph
 
 pnpm add html-react-parser
+
+//custom build configuration 
+// ckeditor.com에 가서 inline 또는 download로 ckeditorfile을 만들어 download하고 project directory 에 압축 해제후 옮겨놓고
+// yarn add file: ./압축해제한 folder이름  ex) ./ckeditor5
+//package.json에서 add 여부를 확인    "ckeditor5-custom-build": "./ckeditor5",
+//note pnpm 은 add가 되지 않음
+//build 시 error가 발생할 시 
+//ReferenceError: self is not defined
+//ckeditor를 import할 때 dynamic을 이용할 것

@@ -10,41 +10,6 @@ export default function TextEditpage() {
   const [data, setData] = useState<string>("");
   return (
     <main className='container'>
-      <h2>세부내역을 입력하세요</h2>
-      <div className='{styles.textEdit}'>
-        <CKEditor 
-        
-          editor={ClassicEditor}
-          data=''
-          // onReady={editor => {
-          //   // You can store the "editor" and use when it is needed.
-          //   // console.log('Editor is ready to use!', editor);
-          // }}
-          onReady={(editor:any) => {
-            editor.ui.view.editable.element.style.minHeight = "500px";
-         }}
-          onChange={(event, editor:any) => {
-
-            const data = editor.getData();
-            setData(data);
-            editor.ui.view.editable.element.style.minHeight = "500px";
-            // console.log({ event, editor, data });
-          }}
-          onBlur={(event, editor) => {
-            // console.log('Blur.', editor);
-          }}
-          onFocus={(event, editor) => {
-          
-            // console.log('Focus.', editor);
-          }}
-        />
-      </div>
-
-
-      <div>
-        <h2>Content</h2>
-        <p>{parse(data)}</p>
-      </div>
     </main>
   );
 }

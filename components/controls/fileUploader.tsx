@@ -12,7 +12,7 @@ const FileUploader = (props: FileUploaderProps) => {
     const { onFileDrop, className,loaderMessage,dropMessage, options } = props;
     const onDrop = useCallback((files: File[]) => {
         // console.log('file drop: ', JSON.stringify(files,null,2))
-        alert('fileuploader on drop')
+        // alert('fileuploader on drop')
 
         if (onFileDrop) {
             console.log('onFileDrop:' + files[0].size)

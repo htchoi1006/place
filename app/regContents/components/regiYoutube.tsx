@@ -3,17 +3,16 @@ import React, { forwardRef, useImperativeHandle, useLayoutEffect, useRef, useSta
 import Image from 'next/image';
 import styles from '../page.module.css';
 import { YoutubeInfo, YoutubeApiInfo, getYoutubeData } from '../lib/convert';
-import { ThumbnailType, YoutubeData } from '@prisma/client';
 import { Alert } from 'react-bootstrap';
 
 type YTProps = {
-  showYtInput:boolean;
+  showYtInput: boolean;
   setRegDataToSave: (name: string, data: any) => void;
 };
 
 export const RegiYoutube = forwardRef<CanHandleSubmit, YTProps>((props: YTProps, ref) => {
 
-  const {showYtInput, setRegDataToSave } = props;
+  const { showYtInput, setRegDataToSave } = props;
   const [embedUrl, setEmbedUrl] = useState('');
   const [url, setUrl] = useState<string>('');
   const [ytdata, setYtData] = useState<YoutubeInfo[]>([]);
@@ -25,23 +24,14 @@ export const RegiYoutube = forwardRef<CanHandleSubmit, YTProps>((props: YTProps,
     ref,
     () => ({
       handleSubmit() {
-        alert('handleSubmit');
         const yd = getYtData();
-        alert('yd data' + JSON.stringify(yd, null, 2));
         setRegDataToSave('ytData', yd);
-        // handleSubmit(formRef.current)
-        // console.log('ref', formRef);
       }
     }),
   );
 
   const getYtData = () => {
-    // alert('getYtData' + JSON.stringify(ytdata,null,2))
-    const ytd: Pick<YoutubeData, "videoIds" | "thumbnailType"> = {
-      videoIds: ytdata.map(s => s.videoId),
-      thumbnailType: ThumbnailType.MEDIUM,
-    };
-    // alert('videoIds' + JSON.stringify(ytd,null,2))
+    const ytd: string[] = ytdata.map(s => s.videoId);
     return ytd;
   };
 
@@ -75,14 +65,10 @@ export const RegiYoutube = forwardRef<CanHandleSubmit, YTProps>((props: YTProps,
 
   const handleImageClick = (url: string) => {
     setEmbedUrl(url);
-    // setEmbedUrl(url);
   };
 
   const handleRemove = (indexToDelete: number) => {
     setYtData(ytdata.filter((file, i) => i !== indexToDelete));
-    //setFiles(files.filter((file, i) => i !== indexToDelete));
-    // alert('files:' + JSON.stringify(files, null, 2));
-    // handleSort();
   };
 
   return (

@@ -17,6 +17,7 @@ export const RegiImages = forwardRef<CanHandleSubmit, RegProps>((props: RegProps
 
     const { showImg, setRegDataToSave } = props;
     const [files, setFiles] = useState<any[]>([]);
+    const [imgPublicIds, setImgPublicIds] = useState<string[]>([])
     const dragItem = useRef<any>(null);
     const dragOverItem = useRef<any>(null);
     const formRef = useRef<any>();
@@ -25,25 +26,17 @@ export const RegiImages = forwardRef<CanHandleSubmit, RegProps>((props: RegProps
         ref,
         () => ({
             handleSubmit() {
-                setRegDataToSave('images', files);
+                handlePost();
+                setRegDataToSave('imagePublicIds', imgPublicIds);
             }
         }),
     );
 
-    // useEffect(() => {
-    //     // Revoke the data uris to avoid memory leaks
-    //     return () => files.forEach(file => URL.revokeObjectURL(file.preview));
-    // }, [files]);
-
-
     const onDrop = useCallback((acceptedFiles: any[], rejectedFiles: any[]) => {
-        console.log('accepted files:', acceptedFiles);
         if (acceptedFiles?.length) {
             setFiles(previousFiles => [...previousFiles, ...acceptedFiles.map(file => Object.assign(file, { preview: URL.createObjectURL(file) }))]);
         }
-
         if (rejectedFiles?.length) {
-            //   setRejected(previousFiles => [...previousFiles, ...rejectedFiles]);
         }
     }, []);
 
@@ -58,21 +51,19 @@ export const RegiImages = forwardRef<CanHandleSubmit, RegProps>((props: RegProps
         dragItem.current = null;
         dragOverItem.current = null;
         setFiles(_files);
-        // setImgSrces(_imgSrces);
     };
     const handleRemove = (indexToDelete: number) => {
         setFiles(files.filter((file, i) => i !== indexToDelete));
-        // alert('files:' + JSON.stringify(files, null, 2));
-        // handleSort();
     };
-
     const handlePost = async () => {
-        // alert('handle post:')
-        const file = files[0];
+        setImgPublicIds([])
+        files.forEach(file=> uploadToCloudinary(file));
+    };
+    const uploadToCloudinary = async (file:any) =>{
+       
         if (!file) return;
 
         const { timestamp, signature } = await getSignature();
-        // alert('api_key:' + process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY as string)
         const formData = new FormData();
         formData.append('file', file);
         formData.append('api_key', process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY as string);
@@ -85,15 +76,15 @@ export const RegiImages = forwardRef<CanHandleSubmit, RegProps>((props: RegProps
             method: 'POST',
             body: formData
         }).then(res => res.json());
-
-        alert('post result:' + JSON.stringify(data, null, 2));
         await saveToDatabase({
             version: data?.version,
             signature: data?.signature,
             public_id: data?.public_id
         });
-    };
+        setImgPublicIds(prev => [...prev, data?.public_id])
+    }
 
+   
     return (<>
         {showImg && (<div className={`border border-primary ${styles.inputDropNoBg}`}>
             <ImgUploader loaderMessage='이미지를 끌어오거나 선택하세요 ' dropMessage='여기에 놓으세요...' options={options} showUploadIcon={false} />

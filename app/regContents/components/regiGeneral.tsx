@@ -1,17 +1,13 @@
 'use client';
 import Image from 'next/image';
 import React, { useCallback, useEffect, forwardRef, useState, useImperativeHandle, useRef } from 'react';
-import { Col, Form, Button, Row, Badge } from 'react-bootstrap';
+import { Col, Form,Row, Badge } from 'react-bootstrap';
 import styles from '@/app/regContents/page.module.css';
 import { Category, KnowHowType, Tag } from '@prisma/client';
-import { createKnowHowAction } from '@/app/actions/knowHowAction';
-import FileUploader from '@/components/controls/fileUploader';
 import { DropzoneOptions } from 'react-dropzone';
 import { useSession, } from 'next-auth/react';
 import { createTagAction } from '@/app/actions/tagAction';
 import { useRouter } from 'next/navigation';
-import { JsonWebTokenError } from 'jsonwebtoken';
-import test from 'node:test';
 import ImgUploader from '@/components/controls/imgUploader';
 
 type RegProps = {
@@ -48,13 +44,11 @@ export const RegiGeneral = forwardRef<CanHandleSubmit, RegProps>((props: RegProp
         if (selectedTag !== null) {
             var lastIndex = tagText.lastIndexOf(" ");
             let tx = tagText.substring(0, lastIndex);
-            // console.log(lastIndex);
             if (lastIndex === -1) {
                 tx = tx + selectedTag.name;
             } else {
                 tx = tx + " " + selectedTag.name;
             }
-            // setSpaceEntered(true)
             setTagText(tx);
             setTagSelected(null);
         }
@@ -65,12 +59,7 @@ export const RegiGeneral = forwardRef<CanHandleSubmit, RegProps>((props: RegProp
         try {
             const data = new FormData();
             console.log('file on Drop:', files[0].size);
-            // if(files[0].size > 1023 * 1000){
-            //     alert('1024 * 1000 이내 파일을 올릴 수 있습니다.')
-            //     return;
-            // }
             data.set('file', files[0]);
-
             const res = await fetch('/api/upload', {
                 method: 'POST',
                 body: data
@@ -82,7 +71,6 @@ export const RegiGeneral = forwardRef<CanHandleSubmit, RegProps>((props: RegProp
         } catch (error) {
             alert('1024 * 1000 이내 파일을 올릴 수 있습니다.');
             router.push('/regContents');
-            // console.log('on drop error:',  error);
         }
     }, [router]);
 
@@ -105,23 +93,11 @@ export const RegiGeneral = forwardRef<CanHandleSubmit, RegProps>((props: RegProp
             console.log('e:any', e)
             const form = e;
             const formData = new FormData(e);
-            // const form = e.currentTarget;
-            // const formData = new FormData(e.currentTarget);
+            console.log('form data:', formData)
             formData.set('thumbNailImage', imgSrc);
             formData.set('authorId', session?.user.id);
-
-            // const formDataObj = Object.fromEntries(formData.entries());
-            // alert(JSON.stringify(formDataObj, null, 2));
-            // alert(typeof formDataObj);
-
-            // if (form.checkValidity() === false) {
-            //     e.preventDefault();
-            //     e.stopPropagation();
-            // }
+            console.log('form data:', formData)
             setRegDataToSave("regiGen", formData);
-            // createKnowHowAction(formData);
-            // setValidated(true);
-            // router.push('/');
         } catch (error) {
             console.log(error);
         }
@@ -135,16 +111,13 @@ export const RegiGeneral = forwardRef<CanHandleSubmit, RegProps>((props: RegProp
             const tagTextBefore = tagText.trim().substring(0, lastIndex);
             const included = tagTextBefore.includes(last);
             if (included) {
-                // alert(`${last} is already entered!`)
                 setTagText(tagTextBefore);
             }
             else {
-                // alert('tag Text: '+ tagText.toString())
                 createTagAction(tagText);
             }
         }
         else {
-            // alert('tag Text: '+ tagText.toString())
             createTagAction(tagText);
         }
     };
@@ -163,7 +136,7 @@ export const RegiGeneral = forwardRef<CanHandleSubmit, RegProps>((props: RegProp
         setTagSelected(tag);
     };
     const onTabKeyDown = ((e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Tab' && tags.length > 0) {
+        if (e.key === 'Tab' && tags?.length > 0) {
             const firstTag = tags[0];
             setTagSelected(firstTag);
         }

@@ -61,8 +61,8 @@ model KnowHow {
   thumbsDownCount Int     @default(0)
   isPublic        Boolean @default(true)
 
-  author   User?   @relation(fields: [authorId], references: [id])
-  authorId String? @db.ObjectId
+  author   User   @relation(fields: [authorId], references: [id])
+  authorId String @db.ObjectId
 
   category   Category @relation(fields: [categoryId], references: [id])
   categoryId String   @db.ObjectId
@@ -78,7 +78,9 @@ model KnowHow {
 
   votes Vote[]
 
-  youtubeData YoutubeData?
+  knowHowDetailInfo KnowHowDetailInfo?
+
+  @@unique([title,authorId])
 }
 
 enum ThumbsStatus {
@@ -100,11 +102,16 @@ model Vote {
   voterId String @db.ObjectId
 }
 
-model YoutubeData {
+model KnowHowDetailInfo {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
   videoIds      String[]
-  thumbnailType ThumbnailType
+  thumbnailType ThumbnailType?
+
+  cloudinaryImgPublicIds      String[]
+  cloudinaryTextFilePublicIds String[]
+
+  detailText String?
 
   knowHow   KnowHow @relation(fields: [knowHowId], references: [id])
   knowHowId String  @unique @db.ObjectId

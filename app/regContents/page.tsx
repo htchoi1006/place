@@ -12,7 +12,6 @@ const RegContentPage = async ({ searchParams }: { searchParams: { searchBy: stri
   const tags = await getTagsStartsWith(searchParams.searchBy) as Array<Tag>;
 
   return (<>
-  
     <Registeration categories={categories} knowHowTypes={knowHowTypes} tags={tags} />
   </>
 

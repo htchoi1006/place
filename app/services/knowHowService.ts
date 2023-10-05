@@ -1,7 +1,8 @@
 'use server'
 import prisma from '@/prisma/prisma'
-import { KnowHow, Tag, User, YoutubeData, } from '@prisma/client'
+import { KnowHow, Tag, User, KnowHowDetailInfo, ThumbnailType, } from '@prisma/client'
 import { getTagsByName, } from './tagService'
+import { collapseTextChangeRangesAcrossMultipleVersions } from 'typescript';
 
 export async function getKnowHowTypes() {
     try {
@@ -12,7 +13,7 @@ export async function getKnowHowTypes() {
         return ({ error })
     }
 }
-export async function createKnowHowWithYt(formData: FormData,ytData:Pick<YoutubeData,"videoIds"| "thumbnailType">) {
+export async function createKnowHowWithDetailInfo(formData: FormData, knowhowDetailInfo:Omit<KnowHowDetailInfo, "id"|"knowHowId">) {
     try {
         if (formData === null) {
             return;
@@ -50,30 +51,59 @@ export async function createKnowHowWithYt(formData: FormData,ytData:Pick<Youtube
                 },
                 include: {
                     tags: true,
+                    knowHowDetailInfo:true,
                 }
             })
             console.log('created KnowHow:', kn)
 
-            let ids:string[] ;
-            if(ytData.videoIds.length > 0){
-                ids = ytData.videoIds.map(s=>s)
+            // let ids:string[] ;
+            // if(knowhowDetailInfo.videoIds.length > 0){
+            //     ids = knowhowDetailInfo.videoIds.map(s=>s)
                
-            }
-            else{
-                ids = [];
-            }
-            console.log('videoIds and ids:', ytData.videoIds, ids)
-            const yt = await prisma.youtubeData.create({
-                data:{
-                    videoIds: ids,
-                    thumbnailType: ytData.thumbnailType,
-                    knowHowId:kn.id,
+            // }
+            // else{
+            //     ids = [];
+            // }
+            console.log('knowhow detail infomation youtube video id:', knowhowDetailInfo.videoIds)
+            console.log('knowhow detail infomation cloudinary youtube thumbnail type:', knowhowDetailInfo.thumbnailType)
+            console.log('knowhow detail infomation cloudinary img public Ids:', knowhowDetailInfo.cloudinaryImgPublicIds)
+            console.log('knowhow detail infomation cloudinary text file public Ids:', knowhowDetailInfo.cloudinaryTextFilePublicIds)
+            // console.log('knowhow detail infomation detail text:', knowhowDetailInfo.detailText)
+
+            // const khdi = await prisma.knowHowDetailInfo.create({
+            //     data:{
+            //         videoIds: knowhowDetailInfo.videoIds,
+            //         thumbnailType: knowhowDetailInfo.thumbnailType as ThumbnailType,
+            //         cloudinaryImgPublicIds: knowhowDetailInfo.cloudinaryImgPublicIds,
+            //         cloudinaryTextFilePublicIds: knowhowDetailInfo.cloudinaryTextFilePublicIds,
+            //         // detailText: knowhowDetailInfo.detailText,
+            //         knowHow:{
+            //             connect:{
+            //                 id: kn.id
+            //             }
+            //         }
+            //     }
+            // })
+            const khd = await prisma.knowHowDetailInfo.create({
+                data: {
+                    videoIds:  knowhowDetailInfo.videoIds as [],
+                    thumbnailType: knowhowDetailInfo.thumbnailType as ThumbnailType,
+                    cloudinaryImgPublicIds: knowhowDetailInfo.cloudinaryImgPublicIds,
+                    cloudinaryTextFilePublicIds: knowhowDetailInfo.cloudinaryTextFilePublicIds,
+                    detailText: knowhowDetailInfo.detailText,
+                    knowHow: {
+                        connect: {
+                            id: kn.id
+                        }
+                    }
                 }
-            })
-            console.log('youtube data created:', yt)
+            });
+        
+            console.log('knowhow detail infomation created:',JSON.stringify(khd, null, 2))
+
             return kn;
         } catch (error) {
-            console.log('KnowHow creation error(createKnowHowWithYt):', error)
+            console.log('KnowHow creation error(createKnowHowWithDetailInfo):', error)
         }
     } catch (error) {
         console.log('createKnowHow error:', error)
@@ -82,6 +112,8 @@ export async function createKnowHowWithYt(formData: FormData,ytData:Pick<Youtube
 
 export async function createKnowHow(formData: FormData) {
     try {
+        console.log('createKnowHow:', formData)
+        
         if (formData === null) {
             return;
         }
@@ -172,7 +204,7 @@ export async function getKnowHows() {
                 // tags: true,
                 // author: true,
                 votes: true,
-                youtubeData:true,
+                knowHowDetailInfo:true,
             }
         })
         // console.log('get products: ', products)
@@ -194,7 +226,7 @@ export async function getKnowHow(id:string) {
                 // tags: true,
                 // author: true,
                 votes: true,
-                youtubeData:true,
+                knowHowDetailInfo:true,
             }
         })
         // console.log('get products: ', products)
