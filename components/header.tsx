@@ -40,7 +40,7 @@ const Header = () => {
   return (
     <Navbar bg="dark" variant='dark' expand="lg" collapseOnSelect>
       <Container>
-        <Navbar.Brand href="https://amisvc.com">
+        <Navbar.Brand href="/">
           {'서비스홈'}
         </Navbar.Brand>
 

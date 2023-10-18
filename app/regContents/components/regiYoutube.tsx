@@ -2,12 +2,12 @@
 import React, { forwardRef, useImperativeHandle, useLayoutEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import styles from '../page.module.css';
-import { YoutubeInfo, YoutubeApiInfo, getYoutubeData } from '../lib/convert';
+import { YoutubeInfo,  getYoutubeData } from '../../lib/convert';
 import { Alert } from 'react-bootstrap';
 
 type YTProps = {
   showYtInput: boolean;
-  setRegDataToSave: (name: string, data: any) => void;
+  setRegDataToSave: (data: any) => void;
 };
 
 export const RegiYoutube = forwardRef<CanHandleSubmit, YTProps>((props: YTProps, ref) => {
@@ -25,7 +25,7 @@ export const RegiYoutube = forwardRef<CanHandleSubmit, YTProps>((props: YTProps,
     () => ({
       handleSubmit() {
         const yd = getYtData();
-        setRegDataToSave('ytData', yd);
+        setRegDataToSave(yd);
       }
     }),
   );
@@ -41,6 +41,7 @@ export const RegiYoutube = forwardRef<CanHandleSubmit, YTProps>((props: YTProps,
       if (url === ' ') {
         return;
       }
+      // alert(url)
       const yd = await getYoutubeData(url) as YoutubeInfo;
       if (yd) {
         setYtData([...ytdata, yd]);
@@ -95,7 +96,7 @@ export const RegiYoutube = forwardRef<CanHandleSubmit, YTProps>((props: YTProps,
           <div key={index} className={styles.listItem} draggable
             onDragStart={(e) => (dragItem.current = index)} onDragEnter={(e) => (dragOverItem.current = index)} onDragEnd={handleSort} onDragOver={(e) => e.preventDefault()}          >
             <Alert variant="white" onClose={() => handleRemove(index)} dismissible>
-              <Image src={item.thumbnails.medium.url} width={item.thumbnails.medium.width} height={item.thumbnails.medium.height} alt={item.videoId} onClick={(e) => handleImageClick(item.embedUrl)} />
+              <Image src={item.thumbnails?.medium.url} width={item.thumbnails?.medium.width} height={item.thumbnails?.medium.height} alt={item.videoId} onClick={(e) => handleImageClick(item.embedUrl)} />
             </Alert>
           </div>
         ))}

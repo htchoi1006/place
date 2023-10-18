@@ -1,5 +1,5 @@
 'use client';
-import { User, Vote, ThumbsStatus } from "@prisma/client";
+import { User, Vote, ThumbsStatus, Knowhow } from "@prisma/client";
 import Card from "react-bootstrap/Card";
 import { useRouter } from 'next/navigation';
 import EyeFill from "./icons/eyeFill";
@@ -10,19 +10,17 @@ import { useCallback, useEffect, useLayoutEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import style from '@/app/page.module.css';
 import Fork from "./icons/fork";
-import { any } from "zod";
-import { fork } from "child_process";
 import { createVoteActionAndUpdateKnowHow } from "../actions/voteAction";
+import { updateKnowHowAction } from "../actions/knowhowAction";
 
 type KnowHowProps = {
-    knowHow: any,
-    logInUser?: User,
+    knowhow: any,
 };
 
 export type VoteData = Omit<Vote, "id">;
 
 const KnowHowItem = (props: KnowHowProps) => {
-    const { knowHow, logInUser } = props;
+    const { knowhow } = props;
     const { data: session } = useSession();
     const router = useRouter();
     const [thumbsStatus, setThumbsStatus] = useState<ThumbsStatus>(ThumbsStatus.None);
@@ -32,34 +30,31 @@ const KnowHowItem = (props: KnowHowProps) => {
     const [voteChanged, setVoteChanged] = useState(false);
 
     const getVote = useCallback(() => {
-        // console.log('getVote voter: ', voter);
+        console.log('knowhowitem useCallback rendering');
         if (voter !== undefined) {
-            // console.log('voter:', voter);
-            const data = knowHow.votes.filter((s: { voterId: any; }) => s.voterId === voter.id)[0] as Vote;
+            const data = knowhow.votes.filter((s: { voterId: any; }) => s.voterId === voter.id)[0] as Vote;
             if (data) {
-                // console.log('data:', data);
                 setVoteLoaded(data);
                 setThumbsStatus(data.thumbsStatus);
                 setforked(data.forked);
             }
             setVoteChanged(false);
         }
-    }, [knowHow.votes, voter]);
+    }, [knowhow.votes, voter]);
 
     useLayoutEffect(() => {
-        // console.log('session: ', session);
         setVoter(session?.user);
-        // console.log('getVote');
         getVote();
-    }, [getVote, session]);
+    }, [getVote, session?.user]);
 
-    // useEffect(() => {
-    //     console.log('use effect: ', thumbsStatus, forked);
-    //     // console.log('initial vote: ', voteLoaded);
-    // }, [thumbsStatus, forked, voteLoaded]);
-
-    const handleClickOnCard = (e: any) => {
-        router.push(`/${props.knowHow?.id}`);
+    const handleClickOnCard = async (e: any) => {
+        try {
+            knowhow.viewCount++;
+            await updateKnowHowAction(knowhow);
+            router.push(`/${props.knowhow?.id}`);
+        } catch (error) {
+            alert(error)
+        }
     };
 
     const checkLoginStatus = () => {
@@ -73,13 +68,12 @@ const KnowHowItem = (props: KnowHowProps) => {
     useLayoutEffect(() => {
         if (voteLoaded) {
             if (voteLoaded.forked !== forked || voteLoaded.thumbsStatus !== thumbsStatus) {
-                console.log('useLayoutEffect set voteChanged: ', thumbsStatus);
+                // console.log('useLayoutEffect set voteChanged: ', thumbsStatus);
                 setVoteChanged(true);
             }
-        }else{
-            // console.log('useLayoutEffect: ', forked, thumbsStatus);
-            if(forked ===true || thumbsStatus !== ThumbsStatus.None){
-                setVoteChanged(true)
+        } else {
+            if (forked === true || thumbsStatus !== ThumbsStatus.None) {
+                setVoteChanged(true);
             }
         }
     }, [thumbsStatus, forked, voteLoaded, voteChanged]);
@@ -87,29 +81,29 @@ const KnowHowItem = (props: KnowHowProps) => {
     useEffect(() => {
         console.log('use Effect, voteChanged', voteChanged);
         if (voteChanged && voter !== null) {
-            console.log('do something here!!', thumbsStatus, forked, voter.id, knowHow.id);
+            // console.log('do something here!!', thumbsStatus, forked, voter.id, knowhow.id);
             const voteToVote: VoteData = {
                 thumbsStatus: thumbsStatus,
                 forked: forked,
-                knowHowId: knowHow.id,
+                knowHowId: knowhow.id,
                 voterId: voter.id,
             };
-            createVoteActionAndUpdateKnowHow(knowHow, voter, voteToVote);
+            createVoteActionAndUpdateKnowHow(knowhow, voter, voteToVote);
         }
-    }, [forked, knowHow, knowHow.id, thumbsStatus, voteChanged, voter]);
+    }, [forked, knowhow, knowhow.id, thumbsStatus, voteChanged, voter]);
 
     const handleThumbUp = (e: any) => {
         if (checkLoginStatus()) {
             if (thumbsStatus === ThumbsStatus.None) {
                 setThumbsStatus(ThumbsStatus.ThumbsUp);
-                knowHow.thumbsUpCount++;
+                knowhow.thumbsUpCount++;
             } else if (thumbsStatus === ThumbsStatus.ThumbsDown) {
                 setThumbsStatus(ThumbsStatus.ThumbsUp);
-                knowHow.thumbsUpCount++;
-                knowHow.thumbsDownCount--;
+                knowhow.thumbsUpCount++;
+                knowhow.thumbsDownCount--;
             } else if (thumbsStatus === ThumbsStatus.ThumbsUp) {
                 setThumbsStatus(ThumbsStatus.None);
-                knowHow.thumbsUpCount--;
+                knowhow.thumbsUpCount--;
             }
         }
     };
@@ -118,16 +112,16 @@ const KnowHowItem = (props: KnowHowProps) => {
         if (checkLoginStatus()) {
             if (thumbsStatus === ThumbsStatus.None) {
                 setThumbsStatus(ThumbsStatus.ThumbsDown);
-                knowHow.thumbsDownCount++;
+                knowhow.thumbsDownCount++;
 
             } else if (thumbsStatus === ThumbsStatus.ThumbsDown) {
                 setThumbsStatus(ThumbsStatus.None);
-                knowHow.thumbsDownCount--;
+                knowhow.thumbsDownCount--;
 
             } else if (thumbsStatus === ThumbsStatus.ThumbsUp) {
                 setThumbsStatus(ThumbsStatus.ThumbsDown);
-                knowHow.thumbsDownCount++;
-                knowHow.thumbsUpCount--;
+                knowhow.thumbsDownCount++;
+                knowhow.thumbsUpCount--;
             }
         }
     };
@@ -145,24 +139,24 @@ const KnowHowItem = (props: KnowHowProps) => {
 
     return (
         <>
-            <div key={knowHow?.id} className='col-sm'>
+            <div key={knowhow?.id} className='col-sm'>
                 <Card className='card shadow-lg p-1 bg-body rounded h-100' >
-                    <Card.Img onClick={(e) => handleClickOnCard(e)} variant="top" src={props.knowHow?.thumbNailImage as string} sizes="100vw" height={250} style={{ objectFit: 'contain', }} />
+                    <Card.Img onClick={(e) => handleClickOnCard(e)} variant="top" src={`/images/${knowhow.thumbnailFilename}`} sizes="100vw" height={250} style={{ objectFit: 'contain', }} />
                     <Card.Body onClick={handleClickOnCard} >
-                        <Card.Title className='text-center fw-bold'>{props.knowHow?.title}</Card.Title>
+                        <Card.Title className='text-center fw-bold'>{knowhow?.title}</Card.Title>
                         <Card.Text className='text-center card-text'>
-                            {props.knowHow?.description}
+                            {knowhow?.description}
                         </Card.Text>
                     </Card.Body>
                     <Card.Footer className="text-center" >
-                        <small className="text-muted"> {getDaysFromToday(props.knowHow?.updatedAt as Date)} 일전
+                        <small className="text-muted"> {getDaysFromToday(props.knowhow?.updatedAt as Date)} 일전
                             <EyeFill className='ms-3 me-2' />
-                            <span>{props.knowHow?.viewCount}</span>
+                            <span>{knowhow?.viewCount}</span>
                             <span className="ms-3">
                                 <Thumbup className={`ms-1 ${style.cursorHand}`} onClick={handleThumbUp} fill={thumbsStatus === ThumbsStatus.ThumbsUp ? "red" : ''} title="좋아요" />
-                                <span className="ms-2 me-3">{knowHow.thumbsUpCount}</span>
+                                <span className="ms-2 me-3">{knowhow.thumbsUpCount}</span>
                                 <ThumbDown className={`ms-1 ${style.cursorHand}`} onClick={handleThumbDown} fill={thumbsStatus === ThumbsStatus.ThumbsDown ? "red" : ''} title="싫어요" />
-                                <span className="ms-2 me-3">{knowHow.thumbsDownCount}</span>
+                                <span className="ms-2 me-3">{knowhow.thumbsDownCount}</span>
                                 <span className="mt-3">
                                     <Fork className={`ms-1 mt-1 ${style.cursorHand}`} onClick={handleforked} fill={forked ? "red" : ''} title="찜했어요" />
                                 </span>

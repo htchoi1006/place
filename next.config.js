@@ -16,11 +16,19 @@ const nextConfig = {
         pathname: '/vi/**',
       },
     ],
-    domains: ['img.youtube.com', 'res.cloudinary.com'],
+    domains: ['img.youtube.com', 'res.cloudinary.com','assets.vercel.com',],
   },
   // images: {
-  //   domains: ['img.youtube.com', 'res.cloudinary.com']
-  // }
+  //       formats: ['image/avif', 'image/webp'],
+  //       remotePatterns: [
+  //           {
+  //               protocol: 'https',
+  //               hostname: 'assets.vercel.com',
+  //               port: '',
+  //               pathname: '/image/upload/**',
+  //           },
+  //       ],
+  //   },
 
 };
 

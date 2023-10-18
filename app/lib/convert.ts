@@ -8,6 +8,10 @@ export const getVideoId = (watchUrl: string) => {
   return null;
 };
 
+export const getWatchUrl = (videoId:string) =>{
+  return `https://www.youtube.com/watch?v=${videoId}`;
+}
+
 export const getYoutubeData = async (watchUrl: string) => {
   let YoutubeInfo:YoutubeInfo = {
     videoId: getVideoId(watchUrl) as string,
@@ -51,8 +55,6 @@ export const getYoutubeInfo = async (watchUrl: string) => {
     return yi;
   }
 };
-
-
 
 export interface YoutubeApiInfo {
   // kind:     string;
@@ -121,4 +123,25 @@ export interface ImgInfo{
 
 export interface FileInfo{
   path:string;
+}
+
+export enum EditMode{
+  EDIT,
+  DISPLAY,
+  REGI,
+}
+
+export interface CloudiaryInfo {
+  asset_id: string,
+  public_id:string,
+  filename: string,
+  format: string,
+  // resource_type: string,
+  bytes:number,
+  // width:number,
+  // height:number,
+  folder:string,
+  // url:string,
+  secure_url:string,
+  thumbnail_url:string 
 }

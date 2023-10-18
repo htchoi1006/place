@@ -12,18 +12,13 @@ interface FileUploaderProps {
 const ImgUploader = (props: FileUploaderProps) => {
     const { showUploadIcon, onFileDrop, className, loaderMessage, dropMessage, options } = props;
     const onDrop = useCallback((files: File[]) => {
-        // console.log('file drop: ', JSON.stringify(files,null,2))
-
         if (onFileDrop) {
             console.log('onFileDrop:' + files[0].size);
             onFileDrop(files[0]);
 
         }
     }, [onFileDrop]);
-
-
     const { getRootProps, getInputProps, isDragActive } = useDropzone(options ? options : { accept: { 'image/*': [] }, maxSize: 1024 * 1000, maxFiles: 1, onDrop });
-
     return (<>
         <div className='p-2'  {...getRootProps()} >
             <input {...getInputProps()} />
@@ -34,12 +29,9 @@ const ImgUploader = (props: FileUploaderProps) => {
                         <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z" />
                     </svg>
                 </p>
-
             </>)}
-
             {isDragActive ? (<p className='text-center  p-1 mb-0'>{dropMessage}</p>) : loaderMessage ? <p className='text-center p-1 mb-0'>{loaderMessage}</p> : <p className='text-center  p-1 mb-0'>{dropMessage}</p>}
         </div>
-
     </>
     );
 };

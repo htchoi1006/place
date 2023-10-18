@@ -1,40 +1,42 @@
 'use client';
 import Image from 'next/image';
 import React, { useCallback, useEffect, forwardRef, useState, useImperativeHandle, useRef } from 'react';
-import { Col, Form,Row, Badge } from 'react-bootstrap';
+import { Col, Form, Row, Badge } from 'react-bootstrap';
 import styles from '@/app/regContents/page.module.css';
-import { Category, KnowHowType, Tag } from '@prisma/client';
+import { Category, KnowhowType, Tag } from '@prisma/client';
 import { DropzoneOptions } from 'react-dropzone';
 import { useSession, } from 'next-auth/react';
 import { createTagAction } from '@/app/actions/tagAction';
 import { useRouter } from 'next/navigation';
 import ImgUploader from '@/components/controls/imgUploader';
+import { getFormdata } from '../lib/formData';
 
 type RegProps = {
     categories: Category[],
-    knowHowTypes: KnowHowType[],
+    knowHowTypes: KnowhowType[],
     tags: Tag[],
-    setRegDataToSave: (name:string, data:any) => void
+    setRegDataToSave: (data: any) => void;
 };
 
 export const RegiGeneral = forwardRef<CanHandleSubmit, RegProps>((props: RegProps, ref) => {
 
-    const {categories, knowHowTypes, tags, setRegDataToSave} = props;
+    const { categories, knowHowTypes, tags, setRegDataToSave } = props;
+    const [otherFormData, setOtherFormData] = useState<any>(null)
+    const [thumbNailFormData, setThumbNailFormData] = useState<any>(null)
     const { data: session } = useSession();
     const [validated, setValidated] = useState(false);
-    const [file, setFile] = useState<File>();
+    const [file, setFile] = useState<any>();
     const [imgSrc, setImgSrc] = useState('');
     const [tagText, setTagText] = useState('');
     const [selectedTag, setTagSelected] = useState<Tag | null>(null);
-
     const router = useRouter();
-
     const formRef = useRef<any>();
     useImperativeHandle(
         ref,
         () => ({
             handleSubmit() {
-                handleSubmit(formRef.current)
+                handleSubmit(formRef.current);
+                setRegDataToSave({otherFormData,thumbNailFormData});
             }
         }),
     );
@@ -55,8 +57,10 @@ export const RegiGeneral = forwardRef<CanHandleSubmit, RegProps>((props: RegProp
     }, [selectedTag, tagText]);
 
     const onDrop = useCallback(async (files: File[]) => {
-        setFile(files[0]);
+        setFile(Object.assign(files[0], { preview: URL.createObjectURL(files[0]) }));
         try {
+
+            // public애 img file를 저장하는 경우(무료 cloudinary저장후 display 속도 문제가 있을 경우에 이용)
             const data = new FormData();
             console.log('file on Drop:', files[0].size);
             data.set('file', files[0]);
@@ -69,6 +73,7 @@ export const RegiGeneral = forwardRef<CanHandleSubmit, RegProps>((props: RegProp
             if (!res.ok) throw new Error(await res.text());
 
         } catch (error) {
+            //파일 사이즈 제약을 지정하였을 경우
             alert('1024 * 1000 이내 파일을 올릴 수 있습니다.');
             router.push('/regContents');
         }
@@ -78,31 +83,37 @@ export const RegiGeneral = forwardRef<CanHandleSubmit, RegProps>((props: RegProp
         accept: { 'image/*': [] }, maxSize: 1024 * 1000, maxFiles: 1, onDrop
     };
 
-    const handleSubmit = async (e: any) => {
+    const handleSubmit = async (form: any) => {
 
         try {
-            if (!imgSrc) {
-                alert('썸네일 이미지를 등록하세요');
-                return;
-            }
-            if(!session?.user){
+            if (!session?.user) {
                 alert('로그인을 하셔야 합니다.');
                 return;
             }
-            
-            console.log('e:any', e)
-            const form = e;
-            const formData = new FormData(e);
-            console.log('form data:', formData)
+            if(!file){
+                alert('썸네일 이미지를 등록하세요');
+                return;
+            }
+            if (form.checkValidity() === false) {
+
+            }
+            setValidated(true);
+            const formData = new FormData(form);
+            formData.append('file',file)
+            formData.append('authorId', session?.user.id);
             formData.set('thumbNailImage', imgSrc);
-            formData.set('authorId', session?.user.id);
-            console.log('form data:', formData)
-            setRegDataToSave("regiGen", formData);
+            setOtherFormData(formData);
+
+            const td =await getFormdata(file, 'openplace')
+            setThumbNailFormData(td);
         } catch (error) {
             console.log(error);
         }
     };
 
+    const getThumbNailFormData = (file:any) =>{
+
+    }
     const createOrRemoveDuplicate = () => {
         const words = tagText.trim().split(" ");
         if (words.length > 1) {
@@ -150,7 +161,7 @@ export const RegiGeneral = forwardRef<CanHandleSubmit, RegProps>((props: RegProp
                         <div className='col-5 p-3'>
                             <Image
                                 alt={file.name}
-                                src={imgSrc}
+                                src={file.preview}
                                 quality={100}
                                 fill
                                 sizes="100vw"
@@ -162,7 +173,7 @@ export const RegiGeneral = forwardRef<CanHandleSubmit, RegProps>((props: RegProp
                     ) : (<div>
                         <h3 className='text-center mt-3 mb-2'>  썸네일 이미지 등록 <b className={styles.redColor}>*</b></h3>
                         <div className={styles.inputDrop}>
-                            <ImgUploader loaderMessage='썸네일 이미지를 끌어오거나 선택하세요 ' dropMessage='Drag &amp; drop files here, or click to select files' options={options} showUploadIcon={true}/>
+                            <ImgUploader loaderMessage='썸네일 이미지를 끌어오거나 선택하세요 ' dropMessage='Drag &amp; drop files here, or click to select files' options={options} showUploadIcon={true} />
                         </div>
                     </div>)}
 
@@ -190,8 +201,8 @@ export const RegiGeneral = forwardRef<CanHandleSubmit, RegProps>((props: RegProp
                             <Col>
                                 <Form.Select required aria-label="know how type select" name='knowHowTypeId' >
                                     <option value="">경험유형(필수)</option>
-                                    {knowHowTypes.map(knowHowType => (
-                                        <option key={knowHowType.id} value={knowHowType.id}>{knowHowType.name}</option>
+                                    {knowHowTypes.map(knowhowType => (
+                                        <option key={knowhowType.id} value={knowhowType.id}>{knowhowType.name}</option>
                                     ))}
                                 </Form.Select>
                                 <Form.Control.Feedback type="invalid">

@@ -1,20 +1,22 @@
-'use server'
-import prisma from '@/prisma/prisma'
-import { KnowHow, Tag, User, KnowHowDetailInfo, ThumbnailType, } from '@prisma/client'
-import { getTagsByName, } from './tagService'
+'use server';
+import prisma from '@/prisma/prisma';
+import { Knowhow, Tag, User, KnowhowDetailInfo, ThumbnailType, } from '@prisma/client';
+import { getTagsByName, } from './tagService';
 import { collapseTextChangeRangesAcrossMultipleVersions } from 'typescript';
 
 export async function getKnowHowTypes() {
     try {
-        const knowHowTypes = await prisma.knowHowType.findMany()
+        const knowHowTypes = await prisma.knowhowType.findMany();
         // console.log(knowHowTypes)
-        return knowHowTypes
+        return knowHowTypes;
     } catch (error) {
-        return ({ error })
+        return ({ error });
     }
 }
-export async function createKnowHowWithDetailInfo(formData: FormData, knowhowDetailInfo:Omit<KnowHowDetailInfo, "id"|"knowHowId">) {
+export async function createKnowHowWithDetailInfo(formData: FormData,knowhowDetailInfo:Omit<KnowhowDetailInfo, "id"|"knowHowId">) {
     try {
+        // const formDataObj = Object.fromEntries(formData.entries());
+        // console.log('create knowhow With detail action: ', JSON.stringify(formDataObj, null, 2));
         if (formData === null) {
             return;
         }
@@ -26,21 +28,22 @@ export async function createKnowHowWithDetailInfo(formData: FormData, knowhowDet
                 const wh = { name: n };
                 tagWhere.push(wh);
             }
-        })
+        });
         const tags = await prisma.tag.findMany({
             where: {
                 OR: tagWhere,
             },
-
-        })
-
+        });
         let tagConnect: any = [];
-        tags.map(t => { const con = { id: t.id }; tagConnect.push(con) });
+        tags.map(t => { const con = { id: t.id }; tagConnect.push(con); });
         try {
-            const kn = await prisma.knowHow.create({
+            const file: any = formData.get('file');
+            console.log(file.name);
+            const kn = await prisma.knowhow.create({
                 data: {
                     title: formData.get('title') as string,
                     description: formData.get('description') as string,
+                    thumbnailFilename: file.name,
                     thumbNailImage: formData.get('thumbNailImage') as string,
                     knowHowTypeId: formData.get('knowHowTypeId') as string,
                     categoryId: formData.get('categoryId') as string,
@@ -51,69 +54,54 @@ export async function createKnowHowWithDetailInfo(formData: FormData, knowhowDet
                 },
                 include: {
                     tags: true,
-                    knowHowDetailInfo:true,
-                }
-            })
-            console.log('created KnowHow:', kn)
-
-            // let ids:string[] ;
-            // if(knowhowDetailInfo.videoIds.length > 0){
-            //     ids = knowhowDetailInfo.videoIds.map(s=>s)
-               
-            // }
-            // else{
-            //     ids = [];
-            // }
-            console.log('knowhow detail infomation youtube video id:', knowhowDetailInfo.videoIds)
-            console.log('knowhow detail infomation cloudinary youtube thumbnail type:', knowhowDetailInfo.thumbnailType)
-            console.log('knowhow detail infomation cloudinary img public Ids:', knowhowDetailInfo.cloudinaryImgPublicIds)
-            console.log('knowhow detail infomation cloudinary text file public Ids:', knowhowDetailInfo.cloudinaryTextFilePublicIds)
-            // console.log('knowhow detail infomation detail text:', knowhowDetailInfo.detailText)
-
-            // const khdi = await prisma.knowHowDetailInfo.create({
-            //     data:{
-            //         videoIds: knowhowDetailInfo.videoIds,
-            //         thumbnailType: knowhowDetailInfo.thumbnailType as ThumbnailType,
-            //         cloudinaryImgPublicIds: knowhowDetailInfo.cloudinaryImgPublicIds,
-            //         cloudinaryTextFilePublicIds: knowhowDetailInfo.cloudinaryTextFilePublicIds,
-            //         // detailText: knowhowDetailInfo.detailText,
-            //         knowHow:{
-            //             connect:{
-            //                 id: kn.id
-            //             }
-            //         }
-            //     }
-            // })
-            const khd = await prisma.knowHowDetailInfo.create({
-                data: {
-                    videoIds:  knowhowDetailInfo.videoIds as [],
-                    thumbnailType: knowhowDetailInfo.thumbnailType as ThumbnailType,
-                    cloudinaryImgPublicIds: knowhowDetailInfo.cloudinaryImgPublicIds,
-                    cloudinaryTextFilePublicIds: knowhowDetailInfo.cloudinaryTextFilePublicIds,
-                    detailText: knowhowDetailInfo.detailText,
-                    knowHow: {
-                        connect: {
-                            id: kn.id
-                        }
-                    }
+                    knowhowDetailInfo: true,
                 }
             });
-        
-            console.log('knowhow detail infomation created:',JSON.stringify(khd, null, 2))
+            // console.log('created knowhow:', kn);
+            // console.log('knowhow detail infomation youtube video id:', knowhowDetailInfo.videoIds);
+            // console.log('knowhow detail infomation cloudinary youtube thumbnail type:', knowhowDetailInfo.thumbnailType);
+            // console.log('knowhow detail infomation cloudinary img public Ids:', knowhowDetailInfo.cloudinaryImgPublicIds);
+            // console.log('knowhow detail infomation cloudinary text file public Ids:', knowhowDetailInfo.cloudinaryTextFilePublicIds);
+            // console.log('knowhow detail infomation cloudinary detail text:', knowhowDetailInfo.detailText);
+            // console.log('create knowhow With detail information: ', JSON.stringify(knowhowDetailInfo.detailText, null, 2));
 
+            // const videoIds = formData.get('videoIds');
+            // const imgFiles = formData.get('imgFiles');
+            // const pdfFiles = formData.get('pdfFiles');
+            // const thumbnailType = formData.get('thumbnailType');
+            // const text = formData.get('text');
+
+            if(kn){
+                const khd = await prisma.knowhowDetailInfo.create({
+                    data: {
+                        videoIds:  knowhowDetailInfo.videoIds,
+                        thumbnailType: knowhowDetailInfo.thumbnailType as ThumbnailType,
+                        imgFileNames: knowhowDetailInfo.imgFileNames,
+                        pdfFileNames: knowhowDetailInfo.pdfFileNames,
+                        detailText: knowhowDetailInfo.detailText,
+                        knowhow: {
+                            connect: {
+                                id: kn.id
+                            }
+                        }
+                    }
+                });
+                console.log('knowhow detail infomation created:', JSON.stringify(khd, null, 2));
+            }
+
+           
             return kn;
         } catch (error) {
-            console.log('KnowHow creation error(createKnowHowWithDetailInfo):', error)
+            console.log('knowhow creation error(createKnowHowWithDetailInfo):', error);
         }
     } catch (error) {
-        console.log('createKnowHow error:', error)
+        console.log('createKnowHow error:', error);
     }
 }
-
-export async function createKnowHow(formData: FormData) {
+export async function createKnowhow(formData: FormData) {
     try {
-        console.log('createKnowHow:', formData)
-        
+        console.log('createKnowHow:', formData);
+
         if (formData === null) {
             return;
         }
@@ -125,22 +113,22 @@ export async function createKnowHow(formData: FormData) {
                 const wh = { name: n };
                 tagWhere.push(wh);
             }
-        })
+        });
         const tags = await prisma.tag.findMany({
             where: {
                 OR: tagWhere,
             },
 
-        })
+        });
 
         let tagConnect: any = [];
-        tags.map(t => { const con = { id: t.id }; tagConnect.push(con) });
+        tags.map(t => { const con = { id: t.id }; tagConnect.push(con); });
         try {
-            const kn = await prisma.knowHow.create({
+            const kn = await prisma.knowhow.create({
                 data: {
                     title: formData.get('title') as string,
                     description: formData.get('description') as string,
-                    thumbNailImage: formData.get('thumbNailImage') as string,
+                    thumbnailFilename: formData.get('thumbNailImage') as string,
                     knowHowTypeId: formData.get('knowHowTypeId') as string,
                     categoryId: formData.get('categoryId') as string,
                     authorId: formData.get('authorId') as string,
@@ -151,90 +139,109 @@ export async function createKnowHow(formData: FormData) {
                 include: {
                     tags: true,
                 }
-            })
-            console.log('created KnowHow:', kn)
+            });
+            console.log('created knowhow:', kn);
 
             return kn;
         } catch (error) {
-            console.log('KnowHow creation error(createKnowHow):', error)
+            console.log('knowhow creation error(createKnowHow):', error);
         }
     } catch (error) {
-        console.log('createKnowHow error:', error)
+        console.log('createKnowHow error:', error);
     }
 
 }
-
-export async function updateKnowHow(knowHow: KnowHow) {
+export async function updateKnowhow(knowhow: Knowhow) {
     try {
-        // console.log("knowHow before update: ", JSON.stringify(knowHow, null, 2))
+        // console.log("knowhow before update: ", JSON.stringify(knowhow, null, 2))
 
-        if (knowHow === null) {
+        if (knowhow === null) {
             return;
         }
         try {
-            const kn = await prisma.knowHow.update({
+            const kn = await prisma.knowhow.update({
                 where: {
-                    id: knowHow.id
+                    id: knowhow.id
                 },
                 data: {
-                    thumbsUpCount: knowHow.thumbsUpCount,
-                    thumbsDownCount: knowHow.thumbsDownCount,
-                    viewCount: knowHow.viewCount,
+                    thumbsUpCount: knowhow.thumbsUpCount,
+                    thumbsDownCount: knowhow.thumbsDownCount,
+                    viewCount: knowhow.viewCount,
                 },
-                include:{
-                    votes:true,
+                include: {
+                    votes: true,
                     author: true,
                 }
-            })
-            // console.log("knowHow after: ", JSON.stringify(kn, null, 2))
+            });
+            // console.log("knowhow after: ", JSON.stringify(kn, null, 2))
             return kn;
         } catch (error) {
-            console.log('update KnowHow error:', error)
+            console.log('update knowhow error:', error);
         }
     } catch (error) {
-        console.log('createKnowHow error:', error)
+        console.log('createKnowHow error:', error);
     }
 
 }
-
 export async function getKnowHows() {
     try {
-        const knowHows = await prisma.knowHow.findMany({
+        const knowHows = await prisma.knowhow.findMany({
             include: {
                 // tags: true,
                 // author: true,
                 votes: true,
-                knowHowDetailInfo:true,
+                knowhowDetailInfo: true,
             }
-        })
+        });
         // console.log('get products: ', products)
-        return knowHows
+        return knowHows;
     }
     catch (error) {
-        console.log(error)
+        console.log(error);
         // return error
     }
 
 }
-export async function getKnowHow(id:string) {
+export async function getKnowHow(id: string) {
     try {
-        const knowHow = await prisma.knowHow.findUnique({
-            where:{
-                id:id,
+        const knowhow = await prisma.knowhow.findUnique({
+            where: {
+                id: id,
             },
             include: {
-                // tags: true,
-                // author: true,
+                tags: true,
+                author: true,
                 votes: true,
-                knowHowDetailInfo:true,
+                KnowhowType: true,
+                category: true,
+                knowhowDetailInfo: true,
             }
-        })
+        });
         // console.log('get products: ', products)
-        return knowHow
+        return knowhow;
     }
     catch (error) {
-        console.log(error)
+        console.log(error);
         // return error
     }
 
+}
+export async function addKnowhowViewCount(id: string, count: number) {
+    try {
+        console.log(count);
+
+        const kn = await prisma.knowhow.update({
+            where: {
+                id: id
+            },
+            data: {
+                viewCount: count,
+            },
+
+        });
+        // console.log("knowhow after: ", JSON.stringify(kn, null, 2))
+        return kn;
+    } catch (error) {
+        console.log('update knowhow error:', error);
+    }
 }

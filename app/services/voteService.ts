@@ -1,18 +1,18 @@
 'use server'
 import prisma from '@/prisma/prisma'
-import { KnowHow, ThumbsStatus, User, Vote } from '@prisma/client'
+import { knowhow, ThumbsStatus, User, Vote } from '@prisma/client'
 import exp from 'constants';
 import { disconnect } from 'process';
 import { VoteData } from '../components/knowHowItem';
 
 export async function getKnowHows() {
-    return await prisma.knowHow.findMany({
+    return await prisma.knowhow.findMany({
         include: {
             votes: true,
         }
     })
 }
-export async function createtVoteAndUpdateKnowHow(knowHow: KnowHow, voter: User, voteInput: VoteData) {
+export async function createtVoteAndUpdateKnowHow(knowhow: knowhow, voter: User, voteInput: VoteData) {
     // console.log('voter:', JSON.stringify(voter,null,2))
     if(voter === undefined || voteInput ===null){
         // console.log('undefined')
@@ -20,7 +20,7 @@ export async function createtVoteAndUpdateKnowHow(knowHow: KnowHow, voter: User,
     }
     let vote = await prisma.vote.findFirst({
         where: {
-            knowHowId: knowHow?.id,
+            knowHowId: knowhow?.id,
             voterId: voter?.id
         }
     })
@@ -63,9 +63,9 @@ export async function createtVoteAndUpdateKnowHow(knowHow: KnowHow, voter: User,
                             id: voter.id,
                         }
                     },
-                    knowHow: {
+                    knowhow: {
                         connect: {
-                            id: knowHow.id
+                            id: knowhow.id
                         }
                     }
                 },
@@ -75,13 +75,13 @@ export async function createtVoteAndUpdateKnowHow(knowHow: KnowHow, voter: User,
     }
 }
 
-export async function getVote(knowHow: KnowHow, voter: User) {
+export async function getVote(knowhow: knowhow, voter: User) {
     try {
-        // console.log('get votes : ', knowHow.id, voter.id)
+        // console.log('get votes : ', knowhow.id, voter.id)
         const vote = await prisma.vote.findFirst({
             where: {
                 voterId: voter.id,
-                knowHowId: knowHow.id,
+                knowHowId: knowhow.id,
             }
         })
         // console.log('get votes : ', JSON.stringify(vote, null, 2))

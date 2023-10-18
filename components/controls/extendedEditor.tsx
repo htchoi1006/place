@@ -5,14 +5,15 @@ import parser from 'html-react-parser';
 
 const ExtendedEditor = () => {
     const [showEditor, setEditor] = useState(true);
+    const [data, setData] = useState('');
     const setMinHeight = (editor: any) => {
         editor.ui.view.editable.element.style.minHeight = "400px";
     };
-    const [data, setData] = useState('');
+   
     return (<>
         {showEditor && (<CKEditor 
             editor={Editor}
-            data=" "
+            data={data}
             onReady={editor => {
                 setMinHeight(editor);
                 // You can store the "editor" and use when it is needed.
