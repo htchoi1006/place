@@ -7,6 +7,8 @@ import { RegiImages } from './regiImages';
 import { createKnowHowWithDetailAction } from '@/app/actions/knowhowAction';
 import { RegiText } from './regiText';
 import { RegiPdfFiles } from './regiPdfFiles';
+import { useRouter } from 'next/navigation';
+import { userAgent } from 'next/server';
 
 type RegProps = {
     categories: Category[],
@@ -15,6 +17,8 @@ type RegProps = {
 };
 
 const Registeration = ({ categories, knowHowTypes, tags }: RegProps) => {
+    const router = useRouter();
+
     const [showDetail, setShowDetail] = useState(false);
     const [genFormData, setGenFormData] = useState<any>();
     const [videoIds, setVideoIds] = useState<any>();
@@ -33,18 +37,7 @@ const Registeration = ({ categories, knowHowTypes, tags }: RegProps) => {
     const [showFile, setShowFile] = useState(false);
     const [showTextEditor, setShowTextEditor] = useState(false);
 
-    const handleSaveBtnClick = () => {
-
-        // alert('thumbNailFormData: ' + thre);
-        // console.log('videoIds: ', videoIds);
-        // alert('otherFormData: '+ getFormDataEntry(otherFormData));
-        // alert('thumbNailFormData: '+ getFormDataEntry(thumbNailFormData));
-        // alert('imgFormData: '+ getFormDataEntry(imgFormData));
-        // alert('pdfFromData: '+ getFormDataEntry(pdfFormData));
-        // alert('pdfFromData: ' + text);
-
-        // if (genFormData) {
-       
+    const handleSaveBtnClick = async () => {
         const knowhowDetailInfo: Omit<KnowhowDetailInfo, "id" | "knowHowId"> = {
             videoIds: videoIds,
             thumbnailType: ThumbnailType.MEDIUM,
@@ -52,16 +45,13 @@ const Registeration = ({ categories, knowHowTypes, tags }: RegProps) => {
             pdfFileNames: pdfFilenames,
             detailText: text,
         };
-        //     // console.log('imgFormData:', imgFormData)
-        //     // createKnowHowWithDetailAction(genFormData, knowhowDetailInfo, imgFormData, pdfFromData);
-        // }
-        // createKnowHowWithDetailAction(genFormData, knowhowDetailInfo, imgFormData, pdfFromData);
-        createKnowHowWithDetailAction(genFormData, knowhowDetailInfo, imgFormData, pdfFormData);
+
+        await createKnowHowWithDetailAction(genFormData, knowhowDetailInfo, imgFormData, pdfFormData);
+        router.push('/');
     };
 
-
     const handleCancelBtnClick = () => {
-        //delete from cloudinary
+        router.push('/');
     };
 
     const handleMouseLeaveGenInfo = () => {
@@ -87,13 +77,13 @@ const Registeration = ({ categories, knowHowTypes, tags }: RegProps) => {
         setVideoIds(videoIds);
     };
     const getImgFormData = (data: any) => {
-        const {imgFilenames, imgFormdata } = data;
-        setImgFilenames(imgFilenames)
+        const { imgFilenames, imgFormdata } = data;
+        setImgFilenames(imgFilenames);
         setImgFormData(imgFormdata);
     };
     const getPdfFiles = (data: any) => {
-        const {pdfFilenames, pdfFormdata } = data;
-        setPdfFilenames(pdfFilenames)
+        const { pdfFilenames, pdfFormdata } = data;
+        setPdfFilenames(pdfFilenames);
         setPdfFormData(pdfFormdata);
     };
     const getTextData = (textData: any) => {
@@ -102,13 +92,15 @@ const Registeration = ({ categories, knowHowTypes, tags }: RegProps) => {
 
     return (
         <>
+            <div className='mt-3'>
+                <button className='me-3 btn btn-primary' onClick={handleSaveBtnClick} type="submit">저장</button>
+                <button className='btn btn-secondary' onClick={handleCancelBtnClick} type="submit">취소</button>
+            </div>
             <div onMouseLeave={handleMouseLeaveGenInfo}>
                 <RegiGeneral ref={regGenRef} setRegDataToSave={getFormGenData} categories={categories} knowHowTypes={knowHowTypes} tags={tags} />
             </div>
             <div className='mt-3'>
                 <button type="button" className="btn btn-success me-3" onClick={() => { regGenRef.current?.handleSubmit(); setShowDetail(!showDetail); setShowYoutube(true); setShowImg(false); setShowFile(false); setShowTextEditor(false); }}>{showDetail ? (<div>세부사항 숨기기</div>) : (<div>세부사항 등록하기</div>)}</button>
-                <button className='me-3 btn btn-primary' onClick={handleSaveBtnClick} type="submit">저장</button>
-                <button className='btn btn-secondary' onClick={handleCancelBtnClick} type="submit">취소</button>
             </div>
             {showDetail && (
                 <div>
@@ -129,6 +121,11 @@ const Registeration = ({ categories, knowHowTypes, tags }: RegProps) => {
                         <RegiText ref={textRef} setRegDataToSave={getTextData} showTextEditor={showTextEditor} />
                     </div>
                 </div>)}
+
+            <div className='mt-3'>
+                <button className='me-3 btn btn-primary' onClick={handleSaveBtnClick} type="submit">저장</button>
+                <button className='btn btn-secondary' onClick={handleCancelBtnClick} type="submit">취소</button>
+            </div>
         </>
     );
 };

@@ -8,15 +8,15 @@ export const getVideoId = (watchUrl: string) => {
   return null;
 };
 
-export const getWatchUrl = (videoId:string) =>{
+export const getWatchUrl = (videoId: string) => {
   return `https://www.youtube.com/watch?v=${videoId}`;
-}
+};
 
 export const getYoutubeData = async (watchUrl: string) => {
-  let YoutubeInfo:YoutubeInfo = {
+  let YoutubeInfo: YoutubeInfo = {
     videoId: getVideoId(watchUrl) as string,
     embedUrl: convertToEmbed(watchUrl) as string,
-    thumbnails: await getThumbnails(watchUrl) as Thumbnails ,
+    thumbnails: await getThumbnails(watchUrl) as Thumbnails,
   };
   return YoutubeInfo;
 };
@@ -115,17 +115,17 @@ export interface YoutubeInfo {
   embedUrl: string,
 }
 
-export interface ImgInfo{
-  thumbnail:string;
-  width:number;
-  height:number;
+export interface ImgInfo {
+  thumbnail: string;
+  width: number;
+  height: number;
 }
 
-export interface FileInfo{
-  path:string;
+export interface FileInfo {
+  path: string;
 }
 
-export enum EditMode{
+export enum EditMode {
   EDIT,
   DISPLAY,
   REGI,
@@ -133,15 +133,27 @@ export enum EditMode{
 
 export interface CloudiaryInfo {
   asset_id: string,
-  public_id:string,
+  public_id: string,
   filename: string,
   format: string,
   // resource_type: string,
-  bytes:number,
+  bytes: number,
   // width:number,
   // height:number,
-  folder:string,
+  folder: string,
   // url:string,
-  secure_url:string,
-  thumbnail_url:string 
+  secure_url: string,
+  thumbnail_url: string;
+}
+
+export function getDateToLocale(date: Date) {
+  let options: any = {
+    year: '2-digit',
+    month: '2-digit',
+    day: '2-digit'
+  };
+  options.timeZone = 'UTC';
+  options.timeZoneName = 'short';
+
+  return date.toLocaleString('ko-KR', options);
 }

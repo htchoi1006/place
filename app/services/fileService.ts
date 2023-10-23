@@ -1,11 +1,11 @@
 'use server'
 import { publicDecrypt } from 'crypto';
-import { promises as fsPromises } from 'fs';
-import { join } from 'path';
+// import { promises as fsPromises } from 'fs';
+// import { join } from 'path';
 import path from "path";
 import fs from "fs";
-import { readFileSync, writeFileSync } from 'fs';
-import RegisterPage from '../auth/register/page';
+// import { readFileSync, writeFileSync } from 'fs';
+// import RegisterPage from '../auth/register/page';
 
 
 const getImageFileDirectory = (imgDir: string) => {
@@ -41,8 +41,6 @@ export const writeFile = async (data: FormData) => {
     }
 }
 
-
-
 export const getFiles = async () => {
     const imgDir = "images";
     const dir = getImageFileDirectory(imgDir)
@@ -50,9 +48,7 @@ export const getFiles = async () => {
     const filenames = fs.readdirSync(dir);
 
     const images = filenames.map((name) => path.join("/", imgDir, name));
-
-
-    console.log('dir: ', dir)
-    console.log('filenames: ', filenames)
-    console.log('images: ', images)
+    // console.log('dir: ', dir)
+    // console.log('filenames: ', filenames)
+    // console.log('images: ', images)
 };

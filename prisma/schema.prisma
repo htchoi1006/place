@@ -31,8 +31,13 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
+  notificationCount Int @default(0)
+
   knowHows Knowhow[]
   votes    Vote[]
+
+  memberProcessedBys MemberRequestAndProcess[] @relation("memberProcessedBys")
+  memberRequestedBys  MemberRequestAndProcess[] @relation("memberRequestedBys")
 }
 
 model KnowhowType {
@@ -79,6 +84,7 @@ model Knowhow {
   votes Vote[]
 
   knowhowDetailInfo KnowhowDetailInfo?
+  memberRequest     MemberRequestAndProcess[]
 
   @@unique([title, authorId])
 }
@@ -102,6 +108,26 @@ model Vote {
   voterId String @db.ObjectId
 }
 
+model MemberRequestAndProcess {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  memberRequestStatus MemberRequestAndProcessStatus
+
+  knowhow   Knowhow @relation(fields: [knowhowId], references: [id])
+  knowhowId String  @db.ObjectId
+
+  memberProcessedBy   User?   @relation("memberProcessedBys", fields: [memberProcessedById], references: [id])
+  memberProcessedById String? @db.ObjectId
+  
+  memberRequestedBy    User   @relation("memberRequestedBys", fields: [memberRequestedById], references: [id])
+  memberRequestedById  String @db.ObjectId
+
+  processedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model KnowhowDetailInfo {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
@@ -115,6 +141,15 @@ model KnowhowDetailInfo {
 
   knowhow   Knowhow @relation(fields: [knowHowId], references: [id])
   knowHowId String  @unique @db.ObjectId
+}
+
+enum MemberRequestAndProcessStatus {
+  NONE
+  REQUESTED
+  APPROVED
+  REJECTED
+  PENDING
+  // ENROLLED
 }
 
 enum ThumbnailType {

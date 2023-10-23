@@ -16,6 +16,6 @@ export async function createTagAction(tagName: string) {
 
 export async function getTagsBySearchTextAction(serchText: string){
    const result = await getTagsStartsWith(serchText)
-   console.log('getTagsBySearchTextAction', JSON.stringify(result,null,2))
+  //  console.log('getTagsBySearchTextAction', JSON.stringify(result,null,2))
    return result;
 }

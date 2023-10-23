@@ -69,7 +69,9 @@ export const authOptions: NextAuthOptions = {
         session.user.email = token.email
         session.user.image = token.picture
         session.user.roles = token.roles
-
+        session.user.notificationCount = token.notificationCount
+        session.user.memberProcessedBys = token.memberProcessedBys
+        session.user.memberRequestedBys = token.memberRequestedBys
       }
       return session
     },
@@ -86,7 +88,10 @@ export const authOptions: NextAuthOptions = {
         name:dbUser.name,
         email: dbUser.email,
         picture: dbUser.image,
-        roles: dbUser.roles
+        roles: dbUser.roles,
+        notificationCount:dbUser.notificationCount,
+        memberProcessedBys : dbUser.memberProcessedBys,
+        memberRequestedBys: dbUser.memberRequestedBys,
       }
     },
   },

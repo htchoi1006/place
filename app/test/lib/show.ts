@@ -1,3 +1,0 @@
- interface CanHandleSubmit {
-    handleSubmit(): void;
-  }

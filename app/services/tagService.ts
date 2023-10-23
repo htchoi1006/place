@@ -103,7 +103,7 @@ export async function createTestTag() {
     let tags: any[] = [];
     tt.map((t) => {
         const tag = createTag(t);
-        console.log('tag in createTestTag:', JSON.stringify(tag, null, 2))
+        // console.log('tag in createTestTag:', JSON.stringify(tag, null, 2))
         tags.push(tag);
     });
 

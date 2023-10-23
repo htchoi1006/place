@@ -45,6 +45,6 @@
     "@types/bcrypt": "^5.0.0",
     "@types/jsonwebtoken": "^9.0.2",
     "@types/react-bootstrap": "^0.32.32",
-    "prisma": "^5.3.1"
+    "prisma": "^5.4.1"
   }
 }

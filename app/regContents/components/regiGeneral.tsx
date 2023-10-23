@@ -62,7 +62,7 @@ export const RegiGeneral = forwardRef<CanHandleSubmit, RegProps>((props: RegProp
 
             // public애 img file를 저장하는 경우(무료 cloudinary저장후 display 속도 문제가 있을 경우에 이용)
             const data = new FormData();
-            console.log('file on Drop:', files[0].size);
+            // console.log('file on Drop:', files[0].size);
             data.set('file', files[0]);
             const res = await fetch('/api/upload', {
                 method: 'POST',

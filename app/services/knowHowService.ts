@@ -2,7 +2,6 @@
 import prisma from '@/prisma/prisma';
 import { Knowhow, Tag, User, KnowhowDetailInfo, ThumbnailType, } from '@prisma/client';
 import { getTagsByName, } from './tagService';
-import { collapseTextChangeRangesAcrossMultipleVersions } from 'typescript';
 
 export async function getKnowHowTypes() {
     try {
@@ -38,13 +37,12 @@ export async function createKnowHowWithDetailInfo(formData: FormData,knowhowDeta
         tags.map(t => { const con = { id: t.id }; tagConnect.push(con); });
         try {
             const file: any = formData.get('file');
-            console.log(file.name);
+            // console.log(file.name);
             const kn = await prisma.knowhow.create({
                 data: {
                     title: formData.get('title') as string,
                     description: formData.get('description') as string,
                     thumbnailFilename: file.name,
-                    thumbNailImage: formData.get('thumbNailImage') as string,
                     knowHowTypeId: formData.get('knowHowTypeId') as string,
                     categoryId: formData.get('categoryId') as string,
                     authorId: formData.get('authorId') as string,
@@ -191,6 +189,8 @@ export async function getKnowHows() {
                 // author: true,
                 votes: true,
                 knowhowDetailInfo: true,
+                memberRequest:true,
+                author:true,
             }
         });
         // console.log('get products: ', products)

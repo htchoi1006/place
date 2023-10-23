@@ -15,7 +15,7 @@ const FileUploader = (props: FileUploaderProps) => {
         // alert('fileuploader on drop')
 
         if (onFileDrop) {
-            console.log('onFileDrop:' + files[0].size)
+            // console.log('onFileDrop:' + files[0].size)
             onFileDrop(files[0]);
            
         }

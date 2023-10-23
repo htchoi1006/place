@@ -1,6 +1,6 @@
 'use server';
 import { revalidatePath } from "next/cache";
-import { addKnowhowViewCount, createKnowHowWithDetailInfo, createKnowhow,  updateKnowhow } from "../services/knowhowService";
+import { addKnowhowViewCount, createKnowHowWithDetailInfo, createKnowhow, updateKnowhow } from "../services/knowhowService";
 import { } from "../services/tagService";
 import { Knowhow, KnowhowDetailInfo } from "@prisma/client";
 import { uploadFile } from "./cloudinary";
@@ -26,8 +26,8 @@ export async function createKnowHowWithDetailAction(genFormData: any, knowhowDet
 
   try {
 
-     await createKnowHowWithDetailInfo(otherFormData, knowhowDetailInfo);
-     const res = await uploadFile(thumbNailFormData);
+    await createKnowHowWithDetailInfo(otherFormData, knowhowDetailInfo);
+    const res = await uploadFile(thumbNailFormData);
 
     imgFormData.forEach(async s => {
       const res = await uploadFile(s);
@@ -41,7 +41,7 @@ export async function createKnowHowWithDetailAction(genFormData: any, knowhowDet
     console.log(error);
   }
 
-  revalidatePath('/')
+  revalidatePath('/');
 }
 
 export async function createKnowHowAction(data: FormData) {
@@ -57,4 +57,6 @@ export async function addKnowhowViewCountAction(id: string, count: number) {
   await addKnowhowViewCount(id, count);
   revalidatePath('/');
 }
+
+
 

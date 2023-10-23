@@ -1,6 +1,6 @@
 'use server'
 import prisma from '@/prisma/prisma'
-import { knowhow, ThumbsStatus, User, Vote } from '@prisma/client'
+import { Knowhow, ThumbsStatus, User, Vote } from '@prisma/client'
 import exp from 'constants';
 import { disconnect } from 'process';
 import { VoteData } from '../components/knowHowItem';
@@ -12,7 +12,7 @@ export async function getKnowHows() {
         }
     })
 }
-export async function createtVoteAndUpdateKnowHow(knowhow: knowhow, voter: User, voteInput: VoteData) {
+export async function createtVoteAndUpdateKnowHow(knowhow: Knowhow, voter: User, voteInput: VoteData) {
     // console.log('voter:', JSON.stringify(voter,null,2))
     if(voter === undefined || voteInput ===null){
         // console.log('undefined')
@@ -75,7 +75,7 @@ export async function createtVoteAndUpdateKnowHow(knowhow: knowhow, voter: User,
     }
 }
 
-export async function getVote(knowhow: knowhow, voter: User) {
+export async function getVote(knowhow: Knowhow, voter: User) {
     try {
         // console.log('get votes : ', knowhow.id, voter.id)
         const vote = await prisma.vote.findFirst({

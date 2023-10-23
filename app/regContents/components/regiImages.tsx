@@ -43,7 +43,7 @@ export const RegiImages = forwardRef<CanHandleSubmit, RegProps>((props: RegProps
         }
         else {
             acceptedFiles.forEach(file => {
-                console.log('condition:', !files.some(s => s.name !== file.name));
+                // console.log('condition:', !files.some(s => s.name !== file.name));
                 if (files.length === 0 || !files.some(s => s.name !== file.name)) {
                     setFiles(prev => [...prev, Object.assign(file, { preview: URL.createObjectURL(file) })]);
                 }

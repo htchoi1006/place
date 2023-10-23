@@ -1,5 +1,6 @@
 import { GoogleUser } from '@/app/auth/types'
 import prisma from '@/prisma/prisma'
+import { MemberRequestAndProcessStatus } from '@prisma/client';
 import bcrypt from "bcrypt";
 
 export async function getUsers() {
@@ -8,6 +9,8 @@ export async function getUsers() {
             include:{
                 knowHows:true,
                 votes:true,
+                memberProcessedBys:true,
+                memberRequestedBys:true,
             }
         })
         return  users
@@ -49,7 +52,30 @@ export async function getUserByEmail(emailInput: string) {
             where: {
                 email: emailInput,
             },
+            include:{
+                // knowHows:true,
+                votes:true,
+                memberProcessedBys:{
+                    include:{
+                        knowhow:true,
+                        memberRequestedBy:true,
+                    }
+                },
+                memberRequestedBys:{
+                    include:{
+                        knowhow:true,
+                        memberProcessedBy:true,
+                    }
+                },
+            }
         })
+      
+        if(user){
+            const requests = user.memberProcessedBys.filter(s=>s.memberRequestStatus === MemberRequestAndProcessStatus.REQUESTED);
+            // console.log('memberRequestedTos', JSON.stringify(requests,null,2))
+            user.notificationCount = requests.length
+        }
+         
         return user
     } catch (error) {
         return ({ error })

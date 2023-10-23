@@ -1,10 +1,9 @@
 'use client';
-import React, { useEffect, useRef, useState, } from 'react';
+import React from 'react';
 
-import { Category, Knowhow, KnowhowDetailInfo, KnowhowType, Tag, ThumbnailType } from '@prisma/client';
+import { Knowhow, } from '@prisma/client';
 import { DispYoutube } from './dispYoutube';
 import { DispImages } from './dispImages';
-import { createKnowHowWithDetailAction, updateKnowHowAction } from '@/app/actions/knowhowAction';
 import { DispText } from './dispText';
 import DispGeneral from './dispGeneral';
 import { DispPdfFiles } from './dispPdfFiles';
@@ -17,6 +16,14 @@ const KnowhowDetails = ({ knowhow }: RegProps) => {
 
     return (
         <>
+         <div className='mt-3'>
+                <button className='me-3 btn btn-primary'  type="submit">멤버 보기</button>
+                <button className='me-3 btn btn-primary'  type="submit">채 팅</button>
+                <button className='me-3 btn btn-primary'  type="submit">화상회의</button>
+                <button className='me-3 btn btn-primary'  type="submit">공지사항</button>
+                <button className='me-3 btn btn-primary'  type="submit">게시판</button>
+
+            </div>
             <DispGeneral knowhow={knowhow} />
             <DispYoutube videoIds={knowhow?.knowhowDetailInfo?.videoIds} thumbnailType="medium" />
             <DispImages imgFileNames={knowhow?.knowhowDetailInfo?.imgFileNames} />

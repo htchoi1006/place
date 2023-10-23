@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 export default function GoogleLogin({ searchParams }: { searchParams: any }) {
   const router = useRouter();
   
-  console.log('request:', searchParams.accessToken)
+  // console.log('request:', searchParams.accessToken)
 
 
   useEffect(() => {

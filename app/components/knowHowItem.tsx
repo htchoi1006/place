@@ -1,5 +1,5 @@
 'use client';
-import { User, Vote, ThumbsStatus, Knowhow } from "@prisma/client";
+import { User, Vote, ThumbsStatus, Knowhow, MemberRequestAndProcessStatus, MemberRequestAndProcess } from "@prisma/client";
 import Card from "react-bootstrap/Card";
 import { useRouter } from 'next/navigation';
 import EyeFill from "./icons/eyeFill";
@@ -12,6 +12,7 @@ import style from '@/app/page.module.css';
 import Fork from "./icons/fork";
 import { createVoteActionAndUpdateKnowHow } from "../actions/voteAction";
 import { updateKnowHowAction } from "../actions/knowhowAction";
+import { createRequestProcessAction } from "../actions/memberRequestProcessAction";
 
 type KnowHowProps = {
     knowhow: any,
@@ -28,9 +29,12 @@ const KnowHowItem = (props: KnowHowProps) => {
     const [voter, setVoter] = useState<User>(session?.user);
     const [voteLoaded, setVoteLoaded] = useState<Vote>();
     const [voteChanged, setVoteChanged] = useState(false);
+    const [mouseOn, setMouseOn] = useState(false);
+    const [memberRequestStatus, setMemberRequestStatus] = useState<MemberRequestAndProcessStatus>(MemberRequestAndProcessStatus.NONE);
+    const [allowRegistration, setAllowRegistration] = useState(false);
+    // const [mememberStatus, setMemberStatus] = useState("그룹참여신청");
 
     const getVote = useCallback(() => {
-        console.log('knowhowitem useCallback rendering');
         if (voter !== undefined) {
             const data = knowhow.votes.filter((s: { voterId: any; }) => s.voterId === voter.id)[0] as Vote;
             if (data) {
@@ -53,7 +57,7 @@ const KnowHowItem = (props: KnowHowProps) => {
             await updateKnowHowAction(knowhow);
             router.push(`/${props.knowhow?.id}`);
         } catch (error) {
-            alert(error)
+            alert(error);
         }
     };
 
@@ -64,6 +68,19 @@ const KnowHowItem = (props: KnowHowProps) => {
         }
         return true;
     };
+
+    useEffect(() => {
+        console.log('use Effect:', session?.user.memberRequestedBys);
+        const memberRequestedBys = session?.user.memberRequestedBys as MemberRequestAndProcess[];
+        if (memberRequestedBys) {
+            const request = memberRequestedBys.filter(s => s.knowhowId === knowhow.id)[0];
+            if (request) {
+                setMemberRequestStatus(request.memberRequestStatus);
+            }
+        }
+        console.log('memberRequestStatus', memberRequestStatus);
+
+    }, [knowhow.id, memberRequestStatus, session?.user]);
 
     useLayoutEffect(() => {
         if (voteLoaded) {
@@ -79,7 +96,7 @@ const KnowHowItem = (props: KnowHowProps) => {
     }, [thumbsStatus, forked, voteLoaded, voteChanged]);
 
     useEffect(() => {
-        console.log('use Effect, voteChanged', voteChanged);
+        // console.log('use Effect, voteChanged', voteChanged);
         if (voteChanged && voter !== null) {
             // console.log('do something here!!', thumbsStatus, forked, voter.id, knowhow.id);
             const voteToVote: VoteData = {
@@ -137,9 +154,44 @@ const KnowHowItem = (props: KnowHowProps) => {
         }
     };
 
+    const handleRequestForProcess = async () => {
+        if (memberRequestStatus === MemberRequestAndProcessStatus.NONE) {
+            await createRequestProcessAction(knowhow.authorId, session?.user.id, knowhow.id);
+        } else if (memberRequestStatus === MemberRequestAndProcessStatus.APPROVED) {
+
+        }
+    };
+
+    const handleMouseEnter = () => {
+        if (session?.user !== undefined && session?.user.id !== knowhow?.authorId) {
+            setMouseOn(true);
+            const mr = knowhow.memberRequest.find((s: any) => s.requesterId === session?.user.id) as MemberRequestAndProcess;
+        }
+    };
+    const handleMouseLeave = () => {
+        setMouseOn(false);
+    };
+
+    const getCurrentRequestProcessStatus = () => {
+        if (memberRequestStatus === MemberRequestAndProcessStatus.REQUESTED) {
+            return '수락대기중';
+        } else if (memberRequestStatus === MemberRequestAndProcessStatus.APPROVED) {
+            setAllowRegistration(true);
+            return '승인(그룹등록)';
+        } else if (memberRequestStatus === MemberRequestAndProcessStatus.REJECTED) {
+            return '멤버거절';
+        } else if (memberRequestStatus === MemberRequestAndProcessStatus.PENDING) {
+            return '멤버보류';
+        } else if (memberRequestStatus === MemberRequestAndProcessStatus.NONE) {
+            return '참여신청';
+        }
+        else {
+            return '참여신청';
+        }
+    };
     return (
         <>
-            <div key={knowhow?.id} className='col-sm'>
+            <div key={knowhow?.id} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} className='col-sm'>
                 <Card className='card shadow-lg p-1 bg-body rounded h-100' >
                     <Card.Img onClick={(e) => handleClickOnCard(e)} variant="top" src={`/images/${knowhow.thumbnailFilename}`} sizes="100vw" height={250} style={{ objectFit: 'contain', }} />
                     <Card.Body onClick={handleClickOnCard} >
@@ -149,6 +201,11 @@ const KnowHowItem = (props: KnowHowProps) => {
                         </Card.Text>
                     </Card.Body>
                     <Card.Footer className="text-center" >
+                        {mouseOn && (<div>
+                            <span onClick={handleRequestForProcess} className="me-2 btn badge bg-warning text-dark">{getCurrentRequestProcessStatus()}</span>
+                            <span className="me-2">작성자:</span>
+                            <span className="me-2">{knowhow.author?.name}</span>
+                        </div>)}
                         <small className="text-muted"> {getDaysFromToday(props.knowhow?.updatedAt as Date)} 일전
                             <EyeFill className='ms-3 me-2' />
                             <span>{knowhow?.viewCount}</span>
